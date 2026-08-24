@@ -1,0 +1,43 @@
+name: release
+
+# Tag a commit with e.g. `v1.0.1` and push the tag; this builds the jar and
+# publishes it as a GitHub release. install-oldanimations.ps1 pulls from
+# whatever this marks as "latest".
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: gradle/actions/wrapper-validation@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'microsoft'
+
+      - name: derive version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - run: chmod +x ./gradlew
+
+      - name: build
+        run: ./gradlew build -Pversion=${{ steps.version.outputs.version }}
+
+      - name: publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Old Animations ${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          files: build/libs/oldanimations-${{ steps.version.outputs.version }}.jar

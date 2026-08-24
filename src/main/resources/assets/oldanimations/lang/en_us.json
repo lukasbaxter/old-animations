@@ -1,0 +1,45 @@
+{
+  "key.category.oldanimations.main": "Old Animations",
+  "key.oldanimations.open_config": "Open Config",
+  "key.oldanimations.toggle": "Toggle Old Animations",
+
+  "text.oldanimations.toggled_on": "Old Animations: on",
+  "text.oldanimations.toggled_off": "Old Animations: off",
+
+  "options.oldanimations.title": "Old Animations",
+
+  "options.oldanimations.enabled": "Old Animations",
+  "options.oldanimations.enabled.tooltip": "Master switch. When off, every animation below falls back to vanilla.",
+
+  "options.oldanimations.sword_blocking": "Sword Blocking",
+  "options.oldanimations.sword_blocking.tooltip": "Hold use with a sword to show the old blocking pose. Visual only - swords still do not block damage in 26.2.",
+
+  "options.oldanimations.block_hit": "Blockhit",
+  "options.oldanimations.block_hit.tooltip": "Keep playing the swing arc while blocking, the way 1.7 did.",
+
+  "options.oldanimations.third_person_block": "Blocking in Third Person",
+  "options.oldanimations.third_person_block.tooltip": "Also pose the arm in F5 view. Applies to your own player only - the server never reports other players as blocking.",
+
+  "options.oldanimations.block_with_axes": "Block With Axes",
+  "options.oldanimations.block_with_axes.tooltip": "Allow the blocking pose for axes and tridents as well as swords.",
+
+  "options.oldanimations.block_pose": "Block Pose",
+  "options.oldanimations.block_pose.tooltip": "Which set of constants builds the first-person block. 1.8 is tuned for modern item models and is the safe default; 1.7 is the literal 1.7.10 transform.",
+  "options.oldanimations.block_pose.v1_8": "1.8",
+  "options.oldanimations.block_pose.v1_7": "1.7",
+
+  "options.oldanimations.old_sneak_pose": "1.7 Sneak Pose",
+  "options.oldanimations.old_sneak_pose.tooltip": "Third-person crouch posed the 1.7 way: legs raised, head barely lowered, body and arms left alone.",
+
+  "options.oldanimations.instant_sneak_camera": "Instant Sneak Camera",
+  "options.oldanimations.instant_sneak_camera.tooltip": "Drop the camera immediately on crouch instead of easing into it. This is the part of 1.7 sneak you actually feel.",
+
+  "options.oldanimations.old_sneak_eye_height": "1.7 Sneak Eye Height",
+  "options.oldanimations.old_sneak_eye_height.tooltip": "Crouch at 1.54 instead of 1.27. Moves the camera only - aiming still originates from the real eye position, so the crosshair sits slightly low while crouched.",
+
+  "options.oldanimations.old_block_arm_pose": "1.7 Blocking Arm",
+  "options.oldanimations.old_block_arm_pose.tooltip": "Drop the 30 degree inward yaw and head tracking modern blocking adds to the arm. Also affects shields.",
+
+  "options.oldanimations.fixed_swing_duration": "Fixed 6-Tick Swing",
+  "options.oldanimations.fixed_swing_duration.tooltip": "Pin every swing to 6 ticks. Most items already use 6, so this only changes items with a custom swing duration."
+}
