@@ -40,4 +40,6 @@ jobs:
         with:
           name: Old Animations ${{ steps.version.outputs.version }}
           generate_release_notes: true
-          files: build/libs/oldanimations-${{ steps.version.outputs.version }}.jar
+          files: |
+            build/libs/oldanimations-${{ steps.version.outputs.version }}.jar
+            scripts/install-oldanimations.ps1
