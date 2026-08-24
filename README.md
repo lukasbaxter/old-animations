@@ -63,6 +63,14 @@ default.
 
 ## Install (Windows)
 
+Grab the installer once (it is also attached to every release):
+
+```powershell
+irm https://raw.githubusercontent.com/lukasbaxter/old-animations/main/scripts/install-oldanimations.ps1 -OutFile install-oldanimations.ps1
+```
+
+Then, every time you want the newest build:
+
 ```powershell
 .\install-oldanimations.ps1
 ```

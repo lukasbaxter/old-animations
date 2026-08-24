@@ -128,6 +128,15 @@ function Get-Release {
     try {
         Invoke-RestMethod -Uri $url -Headers $headers -TimeoutSec 30
     } catch {
+        $code = $null
+        try { $code = [int]$_.Exception.Response.StatusCode } catch { }
+        if ($code -eq 404) {
+            if ($Version) { throw "No release tagged '$Version' exists in $Repo." }
+            throw "$Repo has no published releases yet."
+        }
+        if ($code -eq 403) {
+            throw "GitHub rate-limited this machine. Wait a few minutes, or set `$env:GITHUB_TOKEN to a personal access token."
+        }
         throw "Could not reach the GitHub releases API for $Repo. $($_.Exception.Message)"
     }
 }
