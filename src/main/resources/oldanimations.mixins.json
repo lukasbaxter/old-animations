@@ -1,0 +1,15 @@
+{
+	"required": true,
+	"package": "com.lukasbaxter.oldanim.mixin",
+	"compatibilityLevel": "JAVA_25",
+	"client": [
+		"CameraMixin",
+		"HumanoidModelMixin",
+		"AvatarRendererMixin",
+		"ItemInHandRendererMixin",
+		"LivingEntityMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

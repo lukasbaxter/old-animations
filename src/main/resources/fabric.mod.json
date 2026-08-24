@@ -1,0 +1,28 @@
+{
+	"schemaVersion": 1,
+	"id": "oldanimations",
+	"version": "${version}",
+	"name": "Old Animations",
+	"description": "Client-side 1.7-style animations for modern Minecraft: sword blocking and blockhit, 1.7 sneak, old bow pull, and old item/arm poses. Purely visual — nothing is sent to the server.",
+	"authors": [ "lukasbaxter" ],
+	"contact": {
+		"sources": "https://github.com/lukasbaxter/old-animations",
+		"issues": "https://github.com/lukasbaxter/old-animations/issues"
+	},
+	"license": "MIT",
+	"environment": "client",
+	"entrypoints": {
+		"client": [ "com.lukasbaxter.oldanim.OldAnimations" ]
+	},
+	"mixins": [
+		{
+			"config": "oldanimations.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~26.2",
+		"java": ">=25"
+	}
+}

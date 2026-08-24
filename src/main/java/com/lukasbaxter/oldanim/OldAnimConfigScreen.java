@@ -1,0 +1,90 @@
+package com.lukasbaxter.oldanim;
+
+import net.minecraft.client.OptionInstance;
+import net.minecraft.client.Options;
+import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.options.OptionsSubScreen;
+import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
+
+import java.util.List;
+import java.util.Locale;
+
+/**
+ * In-game settings, opened with the "Open Config" key (O by default).
+ *
+ * <p>Only the toggles live here. The numeric fine-tuning for the block pose
+ * ({@code blockOffsetX/Y/Z}, {@code blockScale}) is edited in
+ * {@code config/oldanimations.json} -- it is rarely touched and would bury the
+ * toggles that matter.
+ */
+public final class OldAnimConfigScreen extends OptionsSubScreen {
+
+    private final OldAnimConfig config = OldAnimConfig.get();
+
+    public OldAnimConfigScreen(@Nullable Screen lastScreen, Options options) {
+        super(lastScreen, options, Component.translatable("options.oldanimations.title"));
+    }
+
+    private static OptionInstance<Boolean> toggle(
+            String key, boolean initial, java.util.function.Consumer<Boolean> setter) {
+        return OptionInstance.createBoolean(
+                "options.oldanimations." + key,
+                OptionInstance.cachedConstantTooltip(
+                        Component.translatable("options.oldanimations." + key + ".tooltip")),
+                initial,
+                setter::accept);
+    }
+
+    @Override
+    protected void addOptions() {
+        if (this.list == null) {
+            return;
+        }
+
+        this.list.addBig(toggle("enabled", config.enabled, v -> config.enabled = v));
+
+        this.list.addSmall(
+                toggle("sword_blocking", config.swordBlocking, v -> config.swordBlocking = v),
+                toggle("block_hit", config.blockHit, v -> config.blockHit = v));
+
+        this.list.addSmall(
+                toggle("third_person_block", config.swordBlockingThirdPerson,
+                        v -> config.swordBlockingThirdPerson = v),
+                toggle("block_with_axes", config.blockWithAxes, v -> config.blockWithAxes = v));
+
+        this.list.addBig(CycleButton
+                .builder(
+                        (OldAnimConfig.BlockPose pose) -> Component.translatable(
+                                "options.oldanimations.block_pose." + pose.name().toLowerCase(Locale.ROOT)),
+                        config.blockPose)
+                .withValues(List.of(OldAnimConfig.BlockPose.values()))
+                .withTooltip(OptionInstance.cachedConstantTooltip(
+                        Component.translatable("options.oldanimations.block_pose.tooltip")))
+                .create(0, 0, 150, 20,
+                        Component.translatable("options.oldanimations.block_pose"),
+                        (button, pose) -> config.blockPose = pose));
+
+        this.list.addSmall(
+                toggle("old_sneak_pose", config.oldSneakPose, v -> config.oldSneakPose = v),
+                toggle("instant_sneak_camera", config.instantSneakCamera,
+                        v -> config.instantSneakCamera = v));
+
+        this.list.addSmall(
+                toggle("old_sneak_eye_height", config.oldSneakEyeHeight,
+                        v -> config.oldSneakEyeHeight = v),
+                toggle("old_block_arm_pose", config.oldBlockArmPose, v -> config.oldBlockArmPose = v));
+
+        this.list.addSmall(
+                toggle("fixed_swing_duration", config.fixedSwingDuration,
+                        v -> config.fixedSwingDuration = v),
+                null);
+    }
+
+    @Override
+    public void onClose() {
+        config.save();
+        super.onClose();
+    }
+}
