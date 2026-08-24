@@ -13,10 +13,12 @@ each feature below corresponds to a specific behaviour that actually changed.
 |---|---|---|---|
 | **Sword blocking** | swords have no use action at all | right-click raised the sword | ✅ |
 | **Blockhit** | n/a | swing arc played on top of the block pose | ✅ |
-| **Sneak camera easing** | eases 50% toward the target per tick | snapped instantly | ✅ |
+| **Sneak camera curve** | eases both ways | instant down, eased up | ✅ |
 | **Sneak eye height** | 1.27 | 1.54 | ✅ (opt-in, see caveat) |
 | **Sneak model pose** | `head.y+=4.2  body.y+=3.2  arms.y+=3.2` | `head.y=1  legs.y=9`, body/arms unmoved | ✅ |
 | **Blocking arm (3rd person)** | pitched, yawed 30° in, tracks the head | pitched only | ✅ |
+| **Red armor on hit** | armour renders with `NO_OVERLAY` | armour reddened with the wearer | ✅ |
+| **Heart flash** | hearts flash white on damage/heal | no flash | ✅ |
 | **Swing duration** | from the item's `SwingAnimation` component | always 6 ticks | ✅ (opt-in) |
 
 ### What is deliberately *not* here
@@ -49,6 +51,17 @@ changes no packet. That puts a hard limit on two things worth being clear about:
 Attack cooldown, reach, knockback and sweep attacks are all server-side gameplay
 and are likewise untouched.
 
+### A correction, kept here on purpose
+
+v1.0.x shipped an "Instant Sneak Camera" toggle that snapped the camera in **both**
+directions. That is the **1.8** behaviour, not the 1.7 one. 1.7's crouch camera is
+asymmetric: instant on the way down, eased at 50% per tick on the way back up
+(that asymmetry is what Orange's mod calls "longer unsneak"). Fixed in v1.1.0,
+and the setting is now `1.7 Sneak Camera`.
+
+Since 26.2 eases in both directions, the audible difference is entering a crouch,
+not leaving one.
+
 ### Caveat on `1.7 Sneak Eye Height`
 
 This one is **off by default** on purpose. It moves the camera to 1.54, but block
@@ -58,6 +71,30 @@ slightly below where you are actually aiming. Turn it on if you want the 1.7 loo
 leave it off if you want your aim to match the reticle. `Instant Sneak Camera` is
 the part of 1.7 sneak you actually feel, and it has no such tradeoff — it is on by
 default.
+
+---
+
+## Compared to Orange's 1.7 Animations / Animatium
+
+Orange's mod (and the open-source [Animatium-Legacy](https://github.com/Legacy-Visuals-Project/Animatium-Legacy),
+GPL-3.0) target **1.8.9**. The 1.8→1.7 gap is not the same as the 26.2→1.7 gap, so
+their option list does not port across one-for-one. Their feature lists were used
+to decide *what to look for*; every behaviour here was then derived independently
+from the 26.2 and 1.7 sources, and no code was copied. This mod stays MIT.
+
+**Taken from their list and implemented:** block-hitting animation, third-person
+sword/arm block position, 1.7 sneak camera curve including the longer unsneak,
+1.7 third-person sneaking pose, red armor on hit, no heart flash.
+
+**Not implemented, and why:**
+
+| Their feature | Why not |
+|---|---|
+| Damage tilt / hurt camera shake | Already a vanilla slider: **Options → Accessibility → Damage Tilt**, set it to 0. A mod toggle would just shadow it. |
+| Punching during usage (bow/potion punching) | 26.2 gates attacks behind `!player.isUsingItem()`. Enabling it means sending attack packets vanilla would not send. That is gameplay, not visuals, and it is the kind of thing server anticheats flag. Out of scope by design. |
+| 1.7 bow pullback, eat/drink animation, swing arc | Already byte-for-byte 1.7 in 26.2. Nothing to restore. |
+| Enchantment glint, 2D dropped items, potion models, skull sprites, XP orb positions | Cosmetic rather than combat-relevant, and each is a large rendering change that cannot be validated without playing. Not worth the crash risk for what they add. |
+| Item switching / re-equip animation | 26.2 already skips the swap animation for component-only changes via `ignoreSwapAnimation`. The remaining gap is small and not verifiable without visual testing. |
 
 ---
 
