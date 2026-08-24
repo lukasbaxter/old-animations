@@ -19,6 +19,7 @@ each feature below corresponds to a specific behaviour that actually changed.
 | **Blocking arm (3rd person)** | pitched, yawed 30° in, tracks the head | pitched only | ✅ |
 | **Red armor on hit** | armour renders with `NO_OVERLAY` | armour reddened with the wearer | ✅ |
 | **Heart flash** | hearts flash white on damage/heal | no flash | ✅ |
+| **Attack cooldown indicator** | crosshair/hotbar indicator | no equivalent | ✅ |
 | **Swing duration** | from the item's `SwingAnimation` component | always 6 ticks | ✅ (opt-in) |
 
 ### What is deliberately *not* here
@@ -71,6 +72,139 @@ slightly below where you are actually aiming. Turn it on if you want the 1.7 loo
 leave it off if you want your aim to match the reticle. `Instant Sneak Camera` is
 the part of 1.7 sneak you actually feel, and it has no such tradeoff — it is on by
 default.
+
+---
+
+## Compared to Orange's 1.7 Animations / Animatium
+
+Orange's mod (and the open-source [Animatium-Legacy](https://github.com/Legacy-Visuals-Project/Animatium-Legacy),
+GPL-3.0) target **1.8.9**. The 1.8→1.7 gap is not the same as the 26.2→1.7 gap, so
+their option list does not port across one-for-one. Their feature lists were used
+to decide *what to look for*; every behaviour here was then derived independently
+from the 26.2 and 1.7 sources, and no code was copied. This mod stays MIT.
+
+**Taken from their list and implemented:** block-hitting animation, third-person
+sword/arm block position, 1.7 sneak camera curve including the longer unsneak,
+1.7 third-person sneaking pose, red armor on hit, no heart flash.
+
+**Not implemented, and why:**
+
+| Their feature | Why not |
+|---|---|
+| Damage tilt / hurt camera shake | Already a vanilla slider: **Options → Accessibility → Damage Tilt**, set it to 0. A mod toggle would just shadow it. |
+| Punching during usage (bow/potion punching) | 26.2 gates attacks behind `!player.isUsingItem()`. Enabling it means sending attack packets vanilla would not send. That is gameplay, not visuals, and it is the kind of thing server anticheats flag. Out of scope by design. |
+| 1.7 bow pullback, eat/drink animation, swing arc | Already byte-for-byte 1.7 in 26.2. Nothing to restore. |
+| Enchantment glint, 2D dropped items, potion models, skull sprites, XP orb positions | Cosmetic rather than combat-relevant, and each is a large rendering change that cannot be validated without playing. Not worth the crash risk for what they add. |
+| Item switching / re-equip animation | 26.2 already skips the swap animation for component-only changes via `ignoreSwapAnimation`. The remaining gap is small and not verifiable without visual testing. |
+
+---
+
+## Install (Windows)
+
+Download both files from the [latest release](https://github.com/lukasbaxter/old-animations/releases/latest),
+put them in the same folder, and **double-click `install-oldanimations.cmd`**.
+
+Windows blocks unsigned `.ps1` files by default, which is why the `.cmd` wrapper
+exists. Batch files aren't covered by the execution policy, so it runs the
+installer without needing `Set-ExecutionPolicy` or admin rights.
+
+To fetch both from a terminal instead:
+
+```powershell
+$base = "https://raw.githubusercontent.com/lukasbaxter/old-animations/main/scripts"
+irm "$base/install-oldanimations.ps1" -OutFile install-oldanimations.ps1
+irm "$base/install-oldanimations.cmd" -OutFile install-oldanimations.cmd
+```
+
+Then, every time you want the newest build:
+
+```powershell
+.\install-oldanimations.cmd
+```
+
+Arguments pass straight through:
+
+```powershell
+.\install-oldanimations.cmd -ListDirs          # show every detected mods folder
+.\install-oldanimations.cmd -ModsDir "..."     # pick/override the folder
+.\install-oldanimations.cmd -Version v1.0.1    # install a specific release
+.\install-oldanimations.cmd -Force             # reinstall the same version
+```
+
+<details>
+<summary>Running the .ps1 directly instead</summary>
+
+If you'd rather skip the wrapper, either bypass the policy per-run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install-oldanimations.ps1
+```
+
+or allow local scripts once, for your user only (no admin needed):
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+Unblock-File .\install-oldanimations.ps1
+```
+
+`RemoteSigned` still blocks downloaded scripts until you `Unblock-File` them,
+which is why both lines are there.
+
+</details>
+
+Close Minecraft first. Windows locks the jar while the game is running, and the
+script will tell you so rather than half-installing.
+
+Requires Minecraft **26.2** with **Fabric Loader 0.19.3+**. No Fabric API needed.
+
+---
+
+## Configuring
+
+Press **O** in game (rebindable under Controls → Old Animations). There is also an
+unbound "Toggle Old Animations" key for flipping the whole mod off mid-game.
+
+Settings live in `config/oldanimations.json`. Four values are file-only because
+they are fine-tuning you would rarely touch:
+
+| Key | Default | Meaning |
+|---|---|---|
+| `blockOffsetX/Y/Z` | `0.0` | nudges the first-person block pose |
+| `blockScale` | `1.0` | scales the blocked item |
+
+### How the block pose is derived
+
+1.7 and 1.8 used the **same** sword block transform:
+
+```
+translate(-0.5, 0.2, 0); Ry(30); Rx(-80); Ry(60)
+```
+
+applied after `transformFirstPersonItem`'s `Ry(45)` and `scale(0.4)`, in front of
+a `firstperson` display transform of `Ry(-135) Rz(25)` at scale `1.7`.
+
+26.2 moved the `Ry(45)` and the `0.4` into the item model itself — `handheld`
+now declares `firstperson_righthand` as `Ry(-90) Rz(25)` at scale `0.68`. Folding
+the old chain through that change gives:
+
+```
+translate  (-0.5, 0.2, 0) x 0.4 through Ry(45)   = (-0.14142136, 0.08, 0.14142136)
+rotation   Ry(45) Ry(30) Rx(-80) Ry(60) Ry(-135) = Ry(75) Rx(-80) Ry(-75)
+           cancelling the new display Ry(-90)     = Ry(75) Rx(-80) Ry(15)
+```
+
+That is what the mod applies, and it reproduces the original orientation to
+**0.0000°**. It puts the blade at 149° from horizontal, across the middle of the
+view — the pose everyone means by "it crosses your chest".
+
+For reference, vanilla's own `BLOCK` branch rounds the same rotation into Euler
+angles and lands **0.329°** off, so this is fractionally closer to 1.7 than
+vanilla's constants are.
+
+Versions before 1.2.0 offered a "1.7" preset that dropped the raw 1.7 numbers
+into 26.2 without folding in the `Ry(45)` and the scale. That is wrong by
+**57°** and produced a visibly incorrect pose. It has been removed rather than
+fixed, because once corrected it is identical to the pose above.
 
 ---
 
