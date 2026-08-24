@@ -31,14 +31,20 @@
   "options.oldanimations.old_sneak_pose": "1.7 Sneak Pose",
   "options.oldanimations.old_sneak_pose.tooltip": "Third-person crouch posed the 1.7 way: legs raised, head barely lowered, body and arms left alone.",
 
-  "options.oldanimations.instant_sneak_camera": "Instant Sneak Camera",
-  "options.oldanimations.instant_sneak_camera.tooltip": "Drop the camera immediately on crouch instead of easing into it. This is the part of 1.7 sneak you actually feel.",
+  "options.oldanimations.old_sneak_camera": "1.7 Sneak Camera",
+  "options.oldanimations.old_sneak_camera.tooltip": "The 1.7 crouch curve: instant going down, eased coming back up. 26.2 eases both ways, 1.8 snapped both ways.",
 
   "options.oldanimations.old_sneak_eye_height": "1.7 Sneak Eye Height",
   "options.oldanimations.old_sneak_eye_height.tooltip": "Crouch at 1.54 instead of 1.27. Moves the camera only - aiming still originates from the real eye position, so the crosshair sits slightly low while crouched.",
 
   "options.oldanimations.old_block_arm_pose": "1.7 Blocking Arm",
   "options.oldanimations.old_block_arm_pose.tooltip": "Drop the 30 degree inward yaw and head tracking modern blocking adds to the arm. Also affects shields.",
+
+  "options.oldanimations.armor_hurt_tint": "Red Armor On Hit",
+  "options.oldanimations.armor_hurt_tint.tooltip": "Tint armour red with its wearer when they take a hit. 26.2 only reddens bare skin, so armoured players barely flinch.",
+
+  "options.oldanimations.no_health_flash": "No Heart Flash",
+  "options.oldanimations.no_health_flash.tooltip": "1.7 hearts did not flash white when you took or regained damage.",
 
   "options.oldanimations.fixed_swing_duration": "Fixed 6-Tick Swing",
   "options.oldanimations.fixed_swing_duration.tooltip": "Pin every swing to 6 ticks. Most items already use 6, so this only changes items with a custom swing duration."

@@ -61,10 +61,11 @@ public final class OldAnimConfig {
     /** 1.7 third-person crouch pose (legs up, head barely lowered, body/arms unmoved). */
     public boolean oldSneakPose = true;
     /**
-     * Drop the camera instantly on crouch instead of easing 50% per tick.
-     * This is the part of "1.7 sneak" that actually changes how the game feels.
+     * The 1.7 crouch camera curve: instant on the way down, eased at 50% per
+     * tick on the way back up. 26.2 eases in both directions; 1.8 snapped in
+     * both directions. The asymmetry is the part you actually feel.
      */
-    public boolean instantSneakCamera = true;
+    public boolean oldSneakCamera = true;
     /**
      * Use 1.7's crouch eye height (1.54) instead of the modern one (1.27).
      *
@@ -83,6 +84,14 @@ public final class OldAnimConfig {
     // Note: the bow pull and the eat/drink transforms are deliberately absent.
     // Their constants in 26.2 are byte-for-byte the 1.7.10 ones, so there is
     // nothing to restore -- a toggle for them would do literally nothing.
+    /**
+     * Tint armour red along with its wearer when they take a hit. 26.2 only
+     * reddens bare skin, so an armoured player barely flinches visually.
+     */
+    public boolean armorHurtTint = true;
+    /** 1.7 health bar: hearts do not flash white on damage or healing. */
+    public boolean noHealthFlash = true;
+
     /** Force every swing to 6 ticks, ignoring per-item swing durations. */
     public boolean fixedSwingDuration = false;
 

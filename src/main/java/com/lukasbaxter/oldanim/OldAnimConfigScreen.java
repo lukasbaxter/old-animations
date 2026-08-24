@@ -68,13 +68,17 @@ public final class OldAnimConfigScreen extends OptionsSubScreen {
 
         this.list.addSmall(
                 toggle("old_sneak_pose", config.oldSneakPose, v -> config.oldSneakPose = v),
-                toggle("instant_sneak_camera", config.instantSneakCamera,
-                        v -> config.instantSneakCamera = v));
+                toggle("old_sneak_camera", config.oldSneakCamera,
+                        v -> config.oldSneakCamera = v));
 
         this.list.addSmall(
                 toggle("old_sneak_eye_height", config.oldSneakEyeHeight,
                         v -> config.oldSneakEyeHeight = v),
                 toggle("old_block_arm_pose", config.oldBlockArmPose, v -> config.oldBlockArmPose = v));
+
+        this.list.addSmall(
+                toggle("armor_hurt_tint", config.armorHurtTint, v -> config.armorHurtTint = v),
+                toggle("no_health_flash", config.noHealthFlash, v -> config.noHealthFlash = v));
 
         this.list.addSmall(
                 toggle("fixed_swing_duration", config.fixedSwingDuration,
