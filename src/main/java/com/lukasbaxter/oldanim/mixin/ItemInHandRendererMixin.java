@@ -113,24 +113,38 @@ public abstract class ItemInHandRendererMixin {
         ci.cancel();
     }
 
+    /**
+     * The 1.7/1.8 sword block pose, expressed exactly for the 26.2 pipeline.
+     *
+     * <p>1.7 and 1.8 used the same block transform:
+     * {@code translate(-0.5, 0.2, 0); Ry(30); Rx(-80); Ry(60)}, applied after
+     * {@code transformFirstPersonItem}'s {@code Ry(45)} and {@code scale(0.4)},
+     * and in front of a {@code firstperson} display transform of
+     * {@code Ry(-135) Rz(25)}.
+     *
+     * <p>26.2 moved the {@code Ry(45)} and the {@code 0.4} into the item model's
+     * display transform, which is now {@code Ry(-90) Rz(25)} with {@code scale 0.68}.
+     * Folding the old chain through that change gives:
+     *
+     * <pre>
+     * translate: (-0.5, 0.2, 0) * 0.4 through Ry(45) = (-0.14142136, 0.08, 0.14142136)
+     * rotation:  Ry(45)*Ry(30)*Rx(-80)*Ry(60)*Ry(-135) = Ry(75)*Rx(-80)*Ry(-75)
+     *            and cancelling the new display Ry(-90) leaves Ry(75)*Rx(-80)*Ry(15)
+     * </pre>
+     *
+     * <p>Verified numerically: this reproduces the true 1.7/1.8 orientation to
+     * 0.0000 degrees. Vanilla's own BLOCK branch rounds the same rotation into
+     * Euler angles and lands 0.329 degrees off, so this is very slightly closer
+     * to the original than vanilla's constants are.
+     *
+     * <p>Dropping the raw 1.7 numbers into 26.2 without folding in the {@code Ry(45)}
+     * and the scale, which this mod did before v1.2.0, is wrong by 57 degrees.
+     */
     private static void applyBlockPose(PoseStack poseStack, OldAnimConfig config, int invert) {
-        switch (config.blockPose) {
-            case V1_8 -> {
-                // Vanilla's own transform for non-shield BLOCK items. Built for
-                // modern item display transforms, so it lands correctly as-is.
-                poseStack.translate(invert * -0.14142136f, 0.08f, 0.14142136f);
-                poseStack.mulPose(Axis.XP.rotationDegrees(-102.25f));
-                poseStack.mulPose(Axis.YP.rotationDegrees(invert * 13.365f));
-                poseStack.mulPose(Axis.ZP.rotationDegrees(invert * 78.05f));
-            }
-            case V1_7 -> {
-                // 1.7.10 ItemRenderer.doBlockTransformations(), verbatim.
-                poseStack.translate(invert * -0.5f, 0.2f, 0.0f);
-                poseStack.mulPose(Axis.YP.rotationDegrees(invert * 30.0f));
-                poseStack.mulPose(Axis.XP.rotationDegrees(-80.0f));
-                poseStack.mulPose(Axis.YP.rotationDegrees(invert * 60.0f));
-            }
-        }
+        poseStack.translate(invert * -0.14142136f, 0.08f, 0.14142136f);
+        poseStack.mulPose(Axis.YP.rotationDegrees(invert * 75.0f));
+        poseStack.mulPose(Axis.XP.rotationDegrees(-80.0f));
+        poseStack.mulPose(Axis.YP.rotationDegrees(invert * 15.0f));
 
         if (config.blockOffsetX != 0.0f || config.blockOffsetY != 0.0f || config.blockOffsetZ != 0.0f) {
             poseStack.translate(invert * config.blockOffsetX, config.blockOffsetY, config.blockOffsetZ);

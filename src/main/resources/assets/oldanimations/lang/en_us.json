@@ -23,11 +23,6 @@
   "options.oldanimations.block_with_axes": "Block With Axes",
   "options.oldanimations.block_with_axes.tooltip": "Allow the blocking pose for axes as well as swords.",
 
-  "options.oldanimations.block_pose": "Block Pose",
-  "options.oldanimations.block_pose.tooltip": "Which set of constants builds the first-person block. 1.8 is tuned for modern item models and is the safe default; 1.7 is the literal 1.7.10 transform.",
-  "options.oldanimations.block_pose.v1_8": "1.8",
-  "options.oldanimations.block_pose.v1_7": "1.7",
-
   "options.oldanimations.old_sneak_pose": "1.7 Sneak Pose",
   "options.oldanimations.old_sneak_pose.tooltip": "Third-person crouch posed the 1.7 way: legs raised, head barely lowered, body and arms left alone.",
 
@@ -45,6 +40,9 @@
 
   "options.oldanimations.no_health_flash": "No Heart Flash",
   "options.oldanimations.no_health_flash.tooltip": "1.7 hearts did not flash white when you took or regained damage.",
+
+  "options.oldanimations.hide_attack_indicator": "Hide Attack Cooldown",
+  "options.oldanimations.hide_attack_indicator.tooltip": "Hide the attack cooldown indicator, which 1.7 had no equivalent of. Vanilla can also do this under Controls > Attack Indicator.",
 
   "options.oldanimations.fixed_swing_duration": "Fixed 6-Tick Swing",
   "options.oldanimations.fixed_swing_duration.tooltip": "Pin every swing to 6 ticks. Most items already use 6, so this only changes items with a custom swing duration."

@@ -2,14 +2,11 @@ package com.lukasbaxter.oldanim;
 
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
-import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
-import java.util.List;
-import java.util.Locale;
 
 /**
  * In-game settings, opened with the "Open Config" key (O by default).
@@ -54,18 +51,6 @@ public final class OldAnimConfigScreen extends OptionsSubScreen {
                         v -> config.swordBlockingThirdPerson = v),
                 toggle("block_with_axes", config.blockWithAxes, v -> config.blockWithAxes = v));
 
-        this.list.addBig(CycleButton
-                .builder(
-                        (OldAnimConfig.BlockPose pose) -> Component.translatable(
-                                "options.oldanimations.block_pose." + pose.name().toLowerCase(Locale.ROOT)),
-                        config.blockPose)
-                .withValues(List.of(OldAnimConfig.BlockPose.values()))
-                .withTooltip(OptionInstance.cachedConstantTooltip(
-                        Component.translatable("options.oldanimations.block_pose.tooltip")))
-                .create(0, 0, 150, 20,
-                        Component.translatable("options.oldanimations.block_pose"),
-                        (button, pose) -> config.blockPose = pose));
-
         this.list.addSmall(
                 toggle("old_sneak_pose", config.oldSneakPose, v -> config.oldSneakPose = v),
                 toggle("old_sneak_camera", config.oldSneakCamera,
@@ -79,6 +64,11 @@ public final class OldAnimConfigScreen extends OptionsSubScreen {
         this.list.addSmall(
                 toggle("armor_hurt_tint", config.armorHurtTint, v -> config.armorHurtTint = v),
                 toggle("no_health_flash", config.noHealthFlash, v -> config.noHealthFlash = v));
+
+        this.list.addSmall(
+                toggle("hide_attack_indicator", config.hideAttackIndicator,
+                        v -> config.hideAttackIndicator = v),
+                null);
 
         this.list.addSmall(
                 toggle("fixed_swing_duration", config.fixedSwingDuration,

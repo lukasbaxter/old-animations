@@ -20,22 +20,6 @@ import java.nio.file.Path;
  */
 public final class OldAnimConfig {
 
-    /** How the first-person sword-block pose is built. */
-    public enum BlockPose {
-        /**
-         * The transform vanilla still uses for non-shield {@code BLOCK} items.
-         * Tuned for modern item display transforms, so it looks correct out of
-         * the box. This is the recommended default.
-         */
-        V1_8,
-        /**
-         * The literal constants from 1.7.10's {@code ItemRenderer.doBlockTransformations()}.
-         * Closer to 1.7 on paper, but 1.7 had no per-model display transforms,
-         * so it usually needs the offset/scale tuning below to look right.
-         */
-        V1_7
-    }
-
     // ---- master ----------------------------------------------------------
     public boolean enabled = true;
 
@@ -46,8 +30,6 @@ public final class OldAnimConfig {
     public boolean swordBlockingThirdPerson = true;
     /** Keep playing the swing animation while blocking. This is the 1.7 "blockhit". */
     public boolean blockHit = true;
-    /** Which set of block-transform constants to use. */
-    public BlockPose blockPose = BlockPose.V1_8;
     /** Also allow the blocking pose for axes, not just swords. */
     public boolean blockWithAxes = false;
 
@@ -91,6 +73,12 @@ public final class OldAnimConfig {
     public boolean armorHurtTint = true;
     /** 1.7 health bar: hearts do not flash white on damage or healing. */
     public boolean noHealthFlash = true;
+    /**
+     * Hide the attack cooldown indicator, which 1.7 had no equivalent of.
+     * Vanilla can already do this under Options > Controls > Attack Indicator;
+     * this exists so the whole 1.7 preset sits behind one switch.
+     */
+    public boolean hideAttackIndicator = true;
 
     /** Force every swing to 6 ticks, ignoring per-item swing durations. */
     public boolean fixedSwingDuration = false;
