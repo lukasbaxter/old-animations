@@ -5,7 +5,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 
 /**
  * Tracks whether the local player is "blocking" in the 1.7 sense: holding the
@@ -72,7 +71,9 @@ public final class BlockingState {
         if (stack.is(ItemTags.SWORDS)) {
             return true;
         }
-        return config.blockWithAxes && (stack.is(ItemTags.AXES) || stack.is(Items.TRIDENT));
+        // Tridents deliberately absent: they have a real use animation, so the
+        // isRealUseItem check above already excluded them.
+        return config.blockWithAxes && stack.is(ItemTags.AXES);
     }
 
     /** True if the given hand is the one holding the blocked item. */
