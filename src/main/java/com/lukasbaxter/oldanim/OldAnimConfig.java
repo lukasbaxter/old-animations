@@ -48,7 +48,7 @@ public final class OldAnimConfig {
     public boolean blockHit = true;
     /** Which set of block-transform constants to use. */
     public BlockPose blockPose = BlockPose.V1_8;
-    /** Also allow blocking with axes, tridents and other {@code #minecraft:swords}-adjacent weapons. */
+    /** Also allow the blocking pose for axes, not just swords. */
     public boolean blockWithAxes = false;
 
     // Fine tuning for the block pose (applied after the preset).

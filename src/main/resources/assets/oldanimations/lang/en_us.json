@@ -21,7 +21,7 @@
   "options.oldanimations.third_person_block.tooltip": "Also pose the arm in F5 view. Applies to your own player only - the server never reports other players as blocking.",
 
   "options.oldanimations.block_with_axes": "Block With Axes",
-  "options.oldanimations.block_with_axes.tooltip": "Allow the blocking pose for axes and tridents as well as swords.",
+  "options.oldanimations.block_with_axes.tooltip": "Allow the blocking pose for axes as well as swords.",
 
   "options.oldanimations.block_pose": "Block Pose",
   "options.oldanimations.block_pose.tooltip": "Which set of constants builds the first-person block. 1.8 is tuned for modern item models and is the safe default; 1.7 is the literal 1.7.10 transform.",
