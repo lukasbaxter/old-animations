@@ -63,36 +63,58 @@ default.
 
 ## Install (Windows)
 
-Grab the installer once (it is also attached to every release):
+Download both files from the [latest release](https://github.com/lukasbaxter/old-animations/releases/latest),
+put them in the same folder, and **double-click `install-oldanimations.cmd`**.
+
+Windows blocks unsigned `.ps1` files by default, which is why the `.cmd` wrapper
+exists. Batch files aren't covered by the execution policy, so it runs the
+installer without needing `Set-ExecutionPolicy` or admin rights.
+
+To fetch both from a terminal instead:
 
 ```powershell
-irm https://raw.githubusercontent.com/lukasbaxter/old-animations/main/scripts/install-oldanimations.ps1 -OutFile install-oldanimations.ps1
+$base = "https://raw.githubusercontent.com/lukasbaxter/old-animations/main/scripts"
+irm "$base/install-oldanimations.ps1" -OutFile install-oldanimations.ps1
+irm "$base/install-oldanimations.cmd" -OutFile install-oldanimations.cmd
 ```
 
 Then, every time you want the newest build:
 
 ```powershell
-.\install-oldanimations.ps1
+.\install-oldanimations.cmd
 ```
 
-It finds your mods folder, pulls the newest release jar from GitHub, deletes the
-old `oldanimations-*.jar`, and drops the new one in. The folder is remembered, so
-after the first run it is just the one command.
+Arguments pass straight through:
 
 ```powershell
-.\install-oldanimations.ps1 -ListDirs      # show every detected mods folder
-.\install-oldanimations.ps1 -ModsDir "..." # pick/override the folder
-.\install-oldanimations.ps1 -Version v1.0.1  # install a specific release
-.\install-oldanimations.ps1 -Force         # reinstall the same version
+.\install-oldanimations.cmd -ListDirs          # show every detected mods folder
+.\install-oldanimations.cmd -ModsDir "..."     # pick/override the folder
+.\install-oldanimations.cmd -Version v1.0.1    # install a specific release
+.\install-oldanimations.cmd -Force             # reinstall the same version
 ```
 
-If PowerShell refuses to run it:
+<details>
+<summary>Running the .ps1 directly instead</summary>
+
+If you'd rather skip the wrapper, either bypass the policy per-run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\install-oldanimations.ps1
 ```
 
-Close Minecraft first — Windows locks the jar while the game is running, and the
+or allow local scripts once, for your user only (no admin needed):
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+Unblock-File .\install-oldanimations.ps1
+```
+
+`RemoteSigned` still blocks downloaded scripts until you `Unblock-File` them,
+which is why both lines are there.
+
+</details>
+
+Close Minecraft first. Windows locks the jar while the game is running, and the
 script will tell you so rather than half-installing.
 
 Requires Minecraft **26.2** with **Fabric Loader 0.19.3+**. No Fabric API needed.
