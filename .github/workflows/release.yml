@@ -43,3 +43,4 @@ jobs:
           files: |
             build/libs/oldanimations-${{ steps.version.outputs.version }}.jar
             scripts/install-oldanimations.ps1
+            scripts/install-oldanimations.cmd

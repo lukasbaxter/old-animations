@@ -39,7 +39,16 @@ Set-StrictMode -Version Latest
 
 $Repo      = 'lukasbaxter/old-animations'
 $JarPrefix = 'oldanimations-'
-$StateFile = Join-Path $env:LOCALAPPDATA 'OldAnimations\install.json'
+
+# Join-Path throws under StrictMode when the root is unset, which would turn a
+# missing environment variable into a confusing "parameter 'Path' is null".
+function Join-IfSet($root, $leaf) {
+    if ([string]::IsNullOrWhiteSpace($root)) { return $null }
+    Join-Path $root $leaf
+}
+
+$StateFile = Join-IfSet $env:LOCALAPPDATA 'OldAnimations\install.json'
+if (-not $StateFile) { $StateFile = Join-Path ([System.IO.Path]::GetTempPath()) 'OldAnimations-install.json' }
 
 function Write-Step($msg) { Write-Host "==> $msg" -ForegroundColor Cyan }
 function Write-Ok  ($msg) { Write-Host "    $msg" -ForegroundColor Green }
@@ -51,8 +60,8 @@ function Get-CandidateModsDirs {
     $candidates = [System.Collections.Generic.List[string]]::new()
 
     # Lunar Client keeps per-profile, per-version external mod folders.
-    $lunarProfiles = Join-Path $env:USERPROFILE '.lunarclient\profiles'
-    if (Test-Path $lunarProfiles) {
+    $lunarProfiles = Join-IfSet $env:USERPROFILE '.lunarclient\profiles'
+    if ($lunarProfiles -and (Test-Path $lunarProfiles)) {
         Get-ChildItem $lunarProfiles -Directory -ErrorAction SilentlyContinue | ForEach-Object {
             Get-ChildItem $_.FullName -Directory -ErrorAction SilentlyContinue | ForEach-Object {
                 $mods = Join-Path $_.FullName 'mods'
@@ -62,14 +71,14 @@ function Get-CandidateModsDirs {
     }
 
     # Vanilla launcher / MultiMC-style .minecraft
-    $dotMc = Join-Path $env:APPDATA '.minecraft\mods'
-    if (Test-Path $dotMc) { $candidates.Add($dotMc) }
+    $dotMc = Join-IfSet $env:APPDATA '.minecraft\mods'
+    if ($dotMc -and (Test-Path $dotMc)) { $candidates.Add($dotMc) }
 
     # Prism / MultiMC instances
     foreach ($root in @(
-        (Join-Path $env:APPDATA 'PrismLauncher\instances'),
-        (Join-Path $env:APPDATA 'MultiMC\instances')
-    )) {
+        (Join-IfSet $env:APPDATA 'PrismLauncher\instances'),
+        (Join-IfSet $env:APPDATA 'MultiMC\instances')
+    ) | Where-Object { $_ }) {
         if (Test-Path $root) {
             Get-ChildItem $root -Directory -ErrorAction SilentlyContinue | ForEach-Object {
                 $mods = Join-Path $_.FullName '.minecraft\mods'
