@@ -14,7 +14,7 @@ each feature below corresponds to a specific behaviour that actually changed.
 | **Sword blocking** | swords have no use action at all | right-click raised the sword | ✅ |
 | **Blockhit** | n/a | swing arc played on top of the block pose | ✅ |
 | **Sneak camera curve** | eases both ways | instant down, eased up | ✅ |
-| **Sneak eye height** | 1.27 | 1.54 | ✅ (opt-in, see caveat) |
+| **Sneak camera depth** | drops 0.35 (1.62 → 1.27) | dropped 0.08 (1.62 → 1.54) | ✅ (see caveat) |
 | **Sneak model pose** | `head.y+=4.2  body.y+=3.2  arms.y+=3.2` | `head.y=1  legs.y=9`, body/arms unmoved | ✅ |
 | **Blocking arm (3rd person)** | pitched, yawed 30° in, tracks the head | pitched only | ✅ |
 | **Blocked item (3rd person)** | item just follows the raised arm | item rotated across the chest | ✅ |
@@ -23,6 +23,8 @@ each feature below corresponds to a specific behaviour that actually changed.
 | **Attack cooldown indicator** | crosshair/hotbar indicator | no equivalent | ✅ |
 | **Swing duration** | from the item's `SwingAnimation` component | always 6 ticks | ✅ (opt-in) |
 | **Blocking slowdown** | swords aren't "in use", so no slowdown | 20% movement, no sprinting | ✅ (opt-in, not visual-only) |
+| **Attacking while using** | `startAttack` bails on `isHandsBusy()` | never checked, so bow punching worked | ✅ (opt-in, sends packets) |
+| **Own arrow crit trail** | crit particles stream behind it | same trail | ➖ removable (preference) |
 
 ### What is deliberately *not* here
 
@@ -39,9 +41,9 @@ each feature below corresponds to a specific behaviour that actually changed.
 ## What it cannot do
 
 This mod only draws things differently. It sends nothing, suppresses nothing, and
-changes no packet — with exactly one opt-in exception, **Blocking Slows You Down**,
-which is called out below. That puts a hard limit on two things worth being clear
-about:
+changes no packet — with two opt-in exceptions, **Blocking Slows You Down** and
+**Attack While Using An Item**, both called out below and both off by default.
+That puts a hard limit on some things worth being clear about:
 
 1. **Sword blocking does not block damage.** In 1.7 blocking halved incoming
    damage; that is server-side and gone in 26.2. You get the pose and the muscle
@@ -77,18 +79,32 @@ v1.4.0).
 
 One caveat worth knowing even after that fix: 1.7 was easing a **0.08** drop, and
 26.2 is easing a **0.35** one (1.62 → 1.27), so the same curve reads as much more
-movement. `Instant Unsneak` turns the ease off entirely if it still feels heavy,
-and `1.7 Sneak Eye Height` restores the small drop at the cost noted below.
+movement. Both halves are fixed as of v1.5.0: the drop is resized to 1.7's 0.08 by default
+(see below), and `Instant Unsneak` — now on by default — removes the ease.
 
-### Caveat on `1.7 Sneak Eye Height`
+### Caveat on the sneak camera depth
 
-This one is **off by default** on purpose. It moves the camera to 1.54, but block
-and entity picking still originate from the real 1.27 eye position — that is what
-keeps the mod visual-only. The result is that while crouched, your crosshair sits
-slightly below where you are actually aiming. Turn it on if you want the 1.7 look;
-leave it off if you want your aim to match the reticle. `Instant Sneak Camera` is
-the part of 1.7 sneak you actually feel, and it has no such tradeoff — it is on by
-default.
+26.2 drops the crouch camera from 1.62 to 1.27, a drop of **0.35**. 1.7 dropped it
+by **0.08** and no further. So 26.2 crouches more than four times as deep, and any
+curve applied to that drop reads as four times as much movement — which is why
+even the correct 1.7 curve felt heavy before this was fixed.
+
+`sneakCameraDrop` in `config/oldanimations.json` is the fraction of 26.2's drop to
+actually apply:
+
+| Value | Drop | |
+|---|---|---|
+| `1.0` | 0.35 | 26.2 as shipped |
+| `0.2286` | 0.08 | 1.7 — **the default** |
+| `0.0` | 0 | camera does not move |
+
+**The cost.** This moves the camera, not the eye. Picking originates from
+`Entity.getEyePosition`, which stays at the real 1.27, so while crouched the
+crosshair sits `(1 - sneakCameraDrop) × 0.35` blocks above where the ray actually
+starts — 0.27 at the default. There is no version of a shallower crouch camera
+that avoids this: making the *eye* shallower instead would disagree with the
+server, which computes 1.27 from the pose either way. Set it to `1.0` if you would
+rather have the deep crouch and an honest reticle.
 
 ---
 
@@ -159,6 +175,44 @@ larger than the `(0.05, 0, -0.1)` nudge it came from.
 
 Mirrored across the YZ plane for a left-handed main arm. 1.7 had no left-handed
 players, so that half is an extrapolation rather than a restoration.
+
+---
+
+## The bow
+
+**Attacking while using an item** — 1.7 allowed it by simply never checking.
+`Minecraft.clickMouse` called `thePlayer.swingItem()` with no reference to
+`isUsingItem()`, so drawing a bow never stopped you swinging. 26.2's
+`startAttack` bails out on `LocalPlayer.isHandsBusy()`, which is set while an
+item is in use.
+
+Restoring it means the client makes attacks happen that a vanilla client would
+have swallowed. Unlike the blocking slowdown, which only handicaps you, this is
+the shape of thing a server anticheat looks for. It is real 1.7 behaviour and the
+toggle is there, but it is off by default and it is the one setting here that
+could plausibly get you flagged.
+
+**Your own arrow's crit trail** can be turned off. This is a preference, not a
+restoration — 1.7's `EntityArrow.onUpdate` spawned the same `"crit"` stream that
+26.2 does. Other players' arrows keep theirs, so a fully drawn shot coming at you
+still reads as one.
+
+**Where the arrow leaves from is not fixable here.** Arrows are spawned by the
+server, at your eye position as of the moment the server processed the release,
+and the packet reaches you a round trip later — by which time you have moved. So
+the arrow appears to come from where you *were*, which is why it drifts one way
+when you strafe and the other way when you back up. Two related facts, neither of
+them client-side:
+
+- the shooter's own motion is folded into the arrow's velocity server-side
+- 1.7 offset the spawn 0.16 blocks to the side of your facing
+  (`posX -= cos(yaw) * 0.16`), which 26.2 dropped; arrows now leave from the
+  centre of your face
+
+A client mod can only make the arrow *render* somewhere other than where it is.
+That is a lie about a moving entity's position and it tends to look worse a few
+ticks later, so this mod does not do it. Say the word if you want it anyway and
+it can go in behind a toggle.
 
 ---
 
@@ -259,13 +313,15 @@ they are fine-tuning you would rarely touch:
 | `blockOffsetX/Y/Z` | `0.0` | nudges the first-person block pose |
 | `blockScale` | `1.0` | scales the blocked item |
 
-### Three settings that are preferences, not restorations
+### Settings that are preferences or trade-offs, not restorations
 
 | Setting | Default | What it is |
 |---|---|---|
 | **Instant Item Swap** | on | Skips the equip dip. 1.7 ramped the item up at 0.4/tick exactly like 26.2 does, so this is not a restoration — it is just tighter when switching mid-fight. |
-| **Instant Unsneak** | off | Snaps the camera up on release. 1.7 eased (see above); this exists because 26.2's crouch drop is 4× 1.7's, so the same curve reads as much more movement. |
+| **Instant Unsneak** | on | Snaps the camera up on release. 1.7 eased over about four ticks; the ease is the part of the sneak that reads as sluggish. Turn it off for the accurate curve. |
 | **Blocking Slows You Down** | off | 1.7 cut movement to 20% and blocked sprinting for any item in use. Faithful, but it is **not visual-only** — it changes where you actually go. You move slower, never faster, so there is nothing for an anticheat to object to, but blocking buys you no damage reduction in 26.2 to pay for the handicap. |
+| **Hide Own Arrow Trail** | on | Drops the crit particle stream behind arrows you fired. 1.7 had the same trail, so this is taste, not history. |
+| **Attack While Using An Item** | off | Bow punching and block-hitting with a drawn bow. Real 1.7 behaviour, but the **only** setting that makes packets happen a vanilla client would not have sent. See above. |
 
 ### How the block pose is derived
 

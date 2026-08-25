@@ -3,6 +3,7 @@
 	"package": "com.lukasbaxter.oldanim.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
+		"AbstractArrowMixin",
 		"CameraMixin",
 		"EquipmentLayerRendererMixin",
 		"HudMixin",
@@ -11,6 +12,7 @@
 		"ItemInHandLayerMixin",
 		"ItemInHandRendererMixin",
 		"LivingEntityMixin",
+		"MinecraftMixin",
 		"LocalPlayerMixin"
 	],
 	"injectors": {

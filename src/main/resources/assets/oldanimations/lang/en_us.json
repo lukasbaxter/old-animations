@@ -19,8 +19,6 @@
   "options.oldanimations.old_sneak_pose.tooltip": "Third-person crouch posed the 1.7 way: legs raised, head barely lowered, body and arms left alone.",
   "options.oldanimations.old_sneak_camera": "1.7 Sneak Camera",
   "options.oldanimations.old_sneak_camera.tooltip": "The 1.7 crouch curve: instant going down, eased coming back up. 26.2 eases both ways, 1.8 snapped both ways.",
-  "options.oldanimations.old_sneak_eye_height": "1.7 Sneak Eye Height",
-  "options.oldanimations.old_sneak_eye_height.tooltip": "Crouch at 1.54 instead of 1.27. Moves the camera only - aiming still originates from the real eye position, so the crosshair sits slightly low while crouched.",
   "options.oldanimations.old_block_arm_pose": "1.7 Blocking Arm",
   "options.oldanimations.old_block_arm_pose.tooltip": "Drop the 30 degree inward yaw and head tracking modern blocking adds to the arm. Also affects shields.",
   "options.oldanimations.armor_hurt_tint": "Red Armor On Hit",
@@ -34,7 +32,11 @@
   "options.oldanimations.instant_item_swap": "Instant Item Swap",
   "options.oldanimations.instant_item_swap.tooltip": "Skip the equip animation and put a newly selected item straight in your hand. Not 1.7 (1.7 had the same ramp 26.2 does), just tighter to switch mid-fight.",
   "options.oldanimations.instant_unsneak": "Instant Unsneak",
-  "options.oldanimations.instant_unsneak.tooltip": "Snap the camera back up on release instead of easing. Also not 1.7 -- 1.7 eased up -- but 26.2 drops the camera much further than 1.7 did, so the ease is more noticeable.",
+  "options.oldanimations.instant_unsneak.tooltip": "Snap the camera back up on release instead of easing over about four ticks. Not 1.7 (1.7 eased), but the ease is the part of the sneak that reads as sluggish. Turn it off for the accurate curve.",
   "options.oldanimations.block_slowdown": "Blocking Slows You Down",
-  "options.oldanimations.block_slowdown.tooltip": "1.7 cut movement to 20% and stopped sprinting while an item was in use. This is the only setting here that is not purely visual: it changes where you actually go. Off by default, since blocking gives you no damage reduction in 26.2 to pay for it."
+  "options.oldanimations.block_slowdown.tooltip": "1.7 cut movement to 20% and stopped sprinting while an item was in use. This is the only setting here that is not purely visual: it changes where you actually go. Off by default, since blocking gives you no damage reduction in 26.2 to pay for it.",
+  "options.oldanimations.hide_arrow_trail": "Hide Own Arrow Trail",
+  "options.oldanimations.hide_arrow_trail.tooltip": "Drop the crit particle stream behind arrows you fired. A preference, not a restoration -- 1.7 had the same trail. Other players' arrows keep theirs.",
+  "options.oldanimations.punch_while_using": "Attack While Using An Item",
+  "options.oldanimations.punch_while_using.tooltip": "Bow punching, and block-hitting with a drawn bow. 1.7 allowed this by never checking; 26.2 blocks it. WARNING: this is the one setting that sends attacks a vanilla client would have swallowed, which is what server anticheats look for. Your call."
 }
