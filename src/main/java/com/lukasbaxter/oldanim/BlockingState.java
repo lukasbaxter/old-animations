@@ -22,6 +22,13 @@ public final class BlockingState {
 
     private static boolean blocking;
 
+    /**
+     * Why {@link #compute} last said no, for the debug readout. When something
+     * behaves on one server and not another, the useful question is which gate
+     * failed, and that is not answerable by reading the source.
+     */
+    private static String reason = "start";
+
     /** 0 = fully lowered, 1 = fully in the block pose. Eased, not switched. */
     private static float progress;
     private static float progressOld;
@@ -82,14 +89,17 @@ public final class BlockingState {
     private static boolean compute(Minecraft minecraft) {
         OldAnimConfig config = OldAnimConfig.get();
         if (!config.enabled || !config.swordBlocking) {
+            reason = "disabled";
             return false;
         }
 
         LocalPlayer player = minecraft.player;
         if (player == null || minecraft.level == null || minecraft.gui.screen() != null) {
+            reason = "no-world";
             return false;
         }
         if (player.isSpectator() || player.isAutoSpinAttack()) {
+            reason = player.isSpectator() ? "spectator" : "spin-attack";
             return false;
         }
         // Deliberately NOT gated on player.isUsingItem().
@@ -108,12 +118,22 @@ public final class BlockingState {
         // A shield (or anything else with a real use action) in the off hand wins:
         // vanilla already animates that, and doubling up looks wrong.
         if (isRealUseItem(player.getOffhandItem())) {
+            reason = "offhand-use";
             return false;
         }
         if (!isBlockable(player.getMainHandItem(), config)) {
+            ItemStack main = player.getMainHandItem();
+            reason = main.isEmpty() ? "empty-hand"
+                    : isRealUseItem(main) ? "main-has-use:" + main.getUseAnimation()
+                    : "not-a-sword";
             return false;
         }
-        return minecraft.options.keyUse.isDown();
+        if (!minecraft.options.keyUse.isDown()) {
+            reason = "use-key-up";
+            return false;
+        }
+        reason = "ok";
+        return true;
     }
 
     /** Would vanilla itself animate a use for this stack? */
@@ -197,6 +217,7 @@ public final class BlockingState {
      *
      * <pre>
      * blk  are we drawing a block at all
+     * why  which gate said no, when blk is 0
      * use  does the client think an item is in use (the server can set this)
      * atk  is the attack key down
      * dig  is vanilla already destroying a block (its own swing would cover us)
@@ -226,8 +247,9 @@ public final class BlockingState {
 
         minecraft.gui.hud.setOverlayMessage(
                 net.minecraft.network.chat.Component.literal(String.format(
-                        "blk=%d use=%d atk=%d dig=%d swg=%d anim=%.2f hit=%s gm=%s",
+                        "blk=%d why=%s use=%d atk=%d dig=%d swg=%d anim=%.2f hit=%s gm=%s",
                         blocking ? 1 : 0,
+                        reason,
                         player.isUsingItem() ? 1 : 0,
                         minecraft.options.keyAttack.isDown() ? 1 : 0,
                         digging ? 1 : 0,

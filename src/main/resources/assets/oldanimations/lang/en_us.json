@@ -57,5 +57,11 @@
   "options.oldanimations.block_transition.value": "Block Transition: %s ticks",
   "options.oldanimations.block_transition.tooltip": "How long the sword takes to travel between the swing and the block pose. Instant is what 1.7 did -- there the travel you see is the swing arc winding down. A short fade smooths the hit-to-block change; a long one never finishes if you click fast, and the sword floats.",
   "options.oldanimations.debug_readout": "Debug Readout",
-  "options.oldanimations.debug_readout.tooltip": "Show a one-line state readout on the action bar while blocking. Diagnostic only -- for working out why an animation fires on one server and not another."
+  "options.oldanimations.debug_readout.tooltip": "Show a one-line state readout on the action bar while blocking. Diagnostic only -- for working out why an animation fires on one server and not another.",
+  "options.oldanimations.category.sword_blocking": "Sword Blocking - restored from 1.7",
+  "options.oldanimations.category.sneaking": "Sneaking - restored from 1.7",
+  "options.oldanimations.category.feedback": "Combat Feedback - what a hit looks like",
+  "options.oldanimations.category.preferences": "Preferences - not 1.7, just nicer",
+  "options.oldanimations.category.gameplay": "Gameplay - these change what you send",
+  "options.oldanimations.category.diagnostics": "Diagnostics"
 }
