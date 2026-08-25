@@ -252,6 +252,29 @@ public final class OldAnimConfig {
      */
     public boolean debugReadout = false;
 
+    /**
+     * Keep the arm swinging while an item is in use -- mid-bow-draw, mid-gapple.
+     *
+     * <p>A restoration: 1.7 applied the swing rotations unconditionally, and only
+     * the positional bob sat in the branch that using an item skipped. 26.2 skips
+     * the swing outright.
+     *
+     * <p>Does nothing on its own. Something still has to make you swing while
+     * using an item, which is {@code punchWhileUsingItem}.
+     */
+    public boolean swingWhileUsingItem = true;
+
+    /**
+     * Drop the burst of food particles that fires the moment you finish eating.
+     *
+     * <p>Not a 26.2 quirk, whatever it looks like: 1.7 did exactly the same, a
+     * 16-particle burst from {@code onItemUseFinish}. It reads as food still
+     * falling out of your mouth after the animation ends because the burst is
+     * spawned at your eye and then left behind as you keep moving. Off by
+     * default because it is faithful; turn it on if you would rather not see it.
+     */
+    public boolean hideEatFinishParticles = false;
+
     // ---- plumbing --------------------------------------------------------
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();

@@ -27,6 +27,7 @@ each feature below corresponds to a specific behaviour that actually changed.
 | **Own arrow crit trail** | crit particles stream behind it | same trail | ➖ removable (preference) |
 | **Melee crit particles** | gated behind the attack cooldown | any falling hit critted | ⚠️ predicted client-side (opt-in) |
 | **Sweep attack arc** | white arc on full-cooldown hits | no sweep at all | ✅ |
+| **Swing while using** | no swing at all mid-use | swing rotations applied regardless | ✅ |
 | **Blockhit while mining** | only swings while a break progresses | swung regardless | ✅ (local animation only) |
 
 ### What is deliberately *not* here
@@ -350,6 +351,35 @@ echo of it, so a pose that disagrees with the key you are holding is ignored —
 but only for 5 ticks. A disagreement that outlives that is real (you are wedged
 under a block and cannot stand up), and then the pose wins. Other players are
 unaffected, since for them the synced pose is all there is.
+
+---
+
+## Swinging mid-bow-draw and mid-gapple
+
+1.7 applied the swing **rotations** unconditionally. Only the positional bob sat
+in the branch that using an item skipped, so drawing a bow or eating never
+stopped your arm swinging. 26.2 skips the swing outright — in `submitArmWithItem`
+the use-item branch ends in a `goto` straight past the `swingArm` call.
+
+**Swing While Using An Item** applies it as `Ry(45) · SWING · Ry(-45)`, the same
+conjugation the block pose uses, immediately after `applyItemArmTransform` where
+1.7's base translate sat. One honest caveat: 1.7 applied the eat jiggle *before*
+the base translate and 26.2 applies it after, so the jiggle composes on top of
+the swing rather than underneath. Both are small transforms about nearby origins,
+so the difference is slight, but it is a difference.
+
+It draws nothing on its own — something still has to make you swing while using
+an item, which is **Attack While Using An Item**. The stir was extended to cover
+that case too, since `continueAttack` bails outright on `isUsingItem()` and
+vanilla contributes no swing at all there.
+
+### The food that keeps falling out of your mouth
+
+Not a 26.2 quirk. 1.7's `onItemUseFinish` called `updateItemUse(itemInUse, 16)` —
+a 16-particle burst on completion, against the 5 the periodic chewing spawns. It
+reads as food still falling after the animation ends because the burst is spawned
+at your eye and then left behind as you keep moving. **Hide Eat Finish Particles**
+drops it, off by default because it is faithful.
 
 ---
 

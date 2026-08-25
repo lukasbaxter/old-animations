@@ -225,12 +225,20 @@ public final class BlockingState {
      */
     public static void tickMiningSwing(Minecraft minecraft) {
         OldAnimConfig config = OldAnimConfig.get();
-        if (!config.enabled || !config.blockMiningSwing || !blocking) {
+        if (!config.enabled || !config.blockMiningSwing) {
             return;
         }
 
         LocalPlayer player = minecraft.player;
         if (player == null || minecraft.gui.screen() != null) {
+            return;
+        }
+        // Either a block we are drawing, or a real item use that the attack gate
+        // has been opened for. 26.2's continueAttack bails outright on
+        // isUsingItem(), so a bow draw or a gapple gets no swing from vanilla at
+        // all and the stir has to come from here.
+        boolean usingWithAttacksAllowed = config.punchWhileUsingItem && player.isUsingItem();
+        if (!blocking && !usingWithAttacksAllowed) {
             return;
         }
         if (!minecraft.options.keyAttack.isDown()) {

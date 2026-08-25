@@ -63,5 +63,9 @@
   "options.oldanimations.category.feedback": "Combat Feedback - what a hit looks like",
   "options.oldanimations.category.preferences": "Preferences - not 1.7, just nicer",
   "options.oldanimations.category.gameplay": "Gameplay - these change what you send",
-  "options.oldanimations.category.diagnostics": "Diagnostics"
+  "options.oldanimations.category.diagnostics": "Diagnostics",
+  "options.oldanimations.hide_eat_finish": "Hide Eat Finish Particles",
+  "options.oldanimations.hide_eat_finish.tooltip": "Drop the burst of food particles that fires the moment you finish eating. Not a 26.2 quirk -- 1.7 spawned the same 16-particle burst. It trails behind you because it is spawned at your eye and you keep moving.",
+  "options.oldanimations.swing_while_using": "Swing While Using An Item",
+  "options.oldanimations.swing_while_using.tooltip": "Keep the arm swinging mid-bow-draw or mid-gapple, as 1.7 did -- it applied the swing rotations unconditionally. Needs Attack While Using An Item to have anything to draw."
 }

@@ -88,6 +88,71 @@ public abstract class ItemInHandRendererMixin {
         this.oOffHandHeight = 1.0f;
     }
 
+    /**
+     * The swing while an item is in use -- hitting mid-bow-draw, or mid-gapple.
+     *
+     * <p>1.7 applied the swing <em>rotations</em> unconditionally. Only the
+     * positional bob sat in the branch that using an item skipped, so drawing a
+     * bow or eating never stopped your arm swinging. 26.2 skips the swing
+     * outright: in {@code submitArmWithItem} the use-item branch ends in a
+     * {@code goto} straight past the {@code swingArm} call.
+     *
+     * <p>Applied here as {@code Ry(45) * SWING * Ry(-45)}, the same conjugation
+     * the block pose uses, immediately after {@code applyItemArmTransform} --
+     * which is where 1.7's base translate sat.
+     *
+     * <p>One honest caveat: 1.7 applied the eat jiggle <em>before</em> the base
+     * translate and 26.2 applies it after, so the jiggle composes on top of the
+     * swing here rather than underneath it. Both are small transforms about
+     * nearby origins, so the difference is slight, but it is a difference.
+     *
+     * <p>This does nothing on its own -- something still has to make you swing
+     * while using an item, which is Attack While Using An Item.
+     */
+    @Inject(
+            method = "submitArmWithItem(Lnet/minecraft/client/player/AbstractClientPlayer;FFLnet/minecraft/world/InteractionHand;FLnet/minecraft/world/item/ItemStack;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;I)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;"
+                            + "applyItemArmTransform(Lcom/mojang/blaze3d/vertex/PoseStack;"
+                            + "Lnet/minecraft/world/entity/HumanoidArm;F)V",
+                    ordinal = 0,
+                    shift = At.Shift.AFTER))
+    private void oldanimations$swingWhileUsingItem(
+            AbstractClientPlayer player,
+            float frameInterp,
+            float xRot,
+            InteractionHand hand,
+            float attack,
+            ItemStack itemStack,
+            float inverseArmHeight,
+            PoseStack poseStack,
+            SubmitNodeCollector collector,
+            int light,
+            CallbackInfo ci) {
+
+        OldAnimConfig config = OldAnimConfig.get();
+        if (!config.enabled || !config.swingWhileUsingItem) {
+            return;
+        }
+        if (attack <= 0.0f || !player.isUsingItem()) {
+            return;
+        }
+
+        HumanoidArm arm = hand == InteractionHand.MAIN_HAND
+                ? player.getMainArm()
+                : player.getMainArm().getOpposite();
+        int invert = arm == HumanoidArm.RIGHT ? 1 : -1;
+
+        float f = Mth.sin(attack * attack * (float) Math.PI);
+        float g = Mth.sin(Mth.sqrt(attack) * (float) Math.PI);
+        poseStack.mulPose(Axis.YP.rotationDegrees(invert * 45.0f));
+        poseStack.mulPose(Axis.YP.rotationDegrees(invert * -f * 20.0f));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(invert * -g * 20.0f));
+        poseStack.mulPose(Axis.XP.rotationDegrees(-g * 80.0f));
+        poseStack.mulPose(Axis.YP.rotationDegrees(invert * -45.0f));
+    }
+
     @Inject(
             method = "submitArmWithItem(Lnet/minecraft/client/player/AbstractClientPlayer;FFLnet/minecraft/world/InteractionHand;FLnet/minecraft/world/item/ItemStack;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;I)V",
             at = @At("HEAD"),

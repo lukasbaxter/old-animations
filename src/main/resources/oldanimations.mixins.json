@@ -7,6 +7,7 @@
 		"AbstractClientPlayerMixin",
 		"CameraMixin",
 		"ClientLevelMixin",
+		"EatParticlesMixin",
 		"EquipmentLayerRendererMixin",
 		"GameRendererMixin",
 		"HudMixin",

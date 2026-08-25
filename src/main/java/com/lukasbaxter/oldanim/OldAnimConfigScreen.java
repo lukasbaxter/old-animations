@@ -120,6 +120,10 @@ public final class OldAnimConfigScreen extends OptionsSubScreen {
                         v -> config.hideOwnArrowTrail = v),
                 toggle("predict_crits", config.predictCrits,
                         v -> config.predictCrits = v));
+        this.list.addSmall(
+                toggle("hide_eat_finish", config.hideEatFinishParticles,
+                        v -> config.hideEatFinishParticles = v),
+                null);
 
         // ---- preferences, not restorations -------------------------------
         this.list.addHeader(header("preferences"));
@@ -141,6 +145,10 @@ public final class OldAnimConfigScreen extends OptionsSubScreen {
                         v -> config.blockSlowdown = v),
                 toggle("punch_while_using", config.punchWhileUsingItem,
                         v -> config.punchWhileUsingItem = v));
+        this.list.addSmall(
+                toggle("swing_while_using", config.swingWhileUsingItem,
+                        v -> config.swingWhileUsingItem = v),
+                null);
 
         this.list.addHeader(header("diagnostics"));
         this.list.addSmall(
