@@ -90,8 +90,9 @@ by **0.08** and no further. So 26.2 crouches more than four times as deep, and a
 curve applied to that drop reads as four times as much movement — which is why
 even the correct 1.7 curve felt heavy before this was fixed.
 
-`sneakCameraDrop` in `config/oldanimations.json` is the fraction of 26.2's drop to
-actually apply:
+**Sneak Camera Depth** in the config screen (press O) is a slider from "camera
+does not move" to 26.2 as shipped, labelled with the resulting drop in blocks.
+It is `sneakCameraDrop` in `config/oldanimations.json`, a fraction of 26.2's drop:
 
 | Value | Drop | |
 |---|---|---|
@@ -199,6 +200,13 @@ actually being destroyed — `continueAttack` calls `player.swing` inside the
 branch where `continueDestroyBlock` returned true. On a server that refuses the
 break, or in adventure mode, nothing is destroyed, so nothing swings and the
 blockhit has nothing to compose onto.
+
+**Softer blockhit.** Blocking is binary the moment you press the button, and
+drawing it as a binary is what makes a fast blockhit look like two swords at
+once — the sword is mid-swing on one frame and fully blocked on the next, with
+nothing in between. `blockTransitionTicks` (3 by default) ramps a progress value
+that the pose is slerped along, so you can see the sword travel into the block.
+Set it to `1` for the old instant switch.
 
 **Blockhit While Mining** restarts the animation locally when vanilla lets it
 lapse, while you are aimed at a block with attack held. It uses
@@ -342,6 +350,7 @@ they are fine-tuning you would rarely touch:
 |---|---|---|
 | `blockOffsetX/Y/Z` | `0.0` | nudges the first-person block pose |
 | `blockScale` | `1.0` | scales the blocked item |
+| `blockTransitionTicks` | `3.0` | ticks the sword takes to move into and out of the block pose |
 
 ### Settings that are preferences or trade-offs, not restorations
 

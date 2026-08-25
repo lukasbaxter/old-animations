@@ -40,5 +40,8 @@
   "options.oldanimations.punch_while_using": "Attack While Using An Item",
   "options.oldanimations.punch_while_using.tooltip": "Bow punching, and block-hitting with a drawn bow. 1.7 allowed this by never checking; 26.2 blocks it. WARNING: this is the one setting that sends attacks a vanilla client would have swallowed, which is what server anticheats look for. Your call.",
   "options.oldanimations.block_mining_swing": "Blockhit While Mining",
-  "options.oldanimations.block_mining_swing.tooltip": "Keep the swing cycling while you hold attack on a block during a block, even when the server refuses the break. Local animation only, no swing packet is sent."
+  "options.oldanimations.block_mining_swing.tooltip": "Keep the swing cycling while you hold attack on a block during a block, even when the server refuses the break. Local animation only, no swing packet is sent.",
+  "options.oldanimations.sneak_camera_drop": "Sneak Camera Depth",
+  "options.oldanimations.sneak_camera_drop.value": "Sneak Camera Depth: %s blocks",
+  "options.oldanimations.sneak_camera_drop.tooltip": "How far the camera drops when you crouch. 1.7 dropped 0.08, 26.2 drops 0.35. Anything below 0.35 puts the camera above the eye that block and entity picking starts from, so the crosshair sits that far high while crouched."
 }
