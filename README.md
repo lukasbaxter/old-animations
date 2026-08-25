@@ -26,6 +26,7 @@ each feature below corresponds to a specific behaviour that actually changed.
 | **Attacking while using** | `startAttack` bails on `isHandsBusy()` | never checked, so bow punching worked | ✅ (opt-in, sends packets) |
 | **Own arrow crit trail** | crit particles stream behind it | same trail | ➖ removable (preference) |
 | **Melee crit particles** | gated behind the attack cooldown | any falling hit critted | ⚠️ predicted client-side (opt-in) |
+| **Sweep attack arc** | white arc on full-cooldown hits | no sweep at all | ✅ |
 | **Blockhit while mining** | only swings while a break progresses | swung regardless | ✅ (local animation only) |
 
 ### What is deliberately *not* here
@@ -255,6 +256,43 @@ it can go in behind a toggle.
 
 ---
 
+## Why spam-clicking looks like several different swings
+
+It isn't the arm. Every piece of the swing is unchanged from 1.7:
+
+- `SwingAnimationType` is `NONE`/`WHACK`/`STAB`, but it is read off the **item's**
+  component — constant for a sword, never chosen per click
+- `SwingAnimation.DEFAULT` duration is **6**, exactly 1.7's
+- `getCurrentSwingDuration()` is that duration adjusted by haste and mining
+  fatigue, the same formula as 1.7's `getArmSwingAnimationEnd()`
+- the restart rule, `!swinging || swingTime >= duration/2 || swingTime < 0`, is
+  1.7's character for character
+
+What 1.7 and 1.8 did not have is the **sweep attack**, added in 1.9. A
+full-cooldown hit throws a large white arc in front of you and a partial-cooldown
+one does not, so an irregular click rate produces an irregular mix of the two and
+reads as the game picking between animations. **Hide Sweep Attack** drops the arc.
+The particle is spawned by the server and arrives as an ordinary particle packet,
+so this only stops it being drawn on your client.
+
+---
+
+## Three switches that are not about 1.7 at all
+
+**No View Bobbing** and **No FOV Effects** exist because 26.2 stopped surfacing
+the vanilla View Bobbing option and FOV Effects slider where you can reach them.
+Neither restores anything: 26.2's bob is byte-for-byte 1.7's, and the FOV
+modifier is just vanilla's sprint/speed/flying push. The mod would rather not
+shadow a vanilla setting, but a setting you cannot open is not much use.
+
+**Damage tint length** (`hurtTintTicks`, 20 by default, 10 is vanilla) stretches
+the red flash. 1.7 also used 10 ticks, so this is taste. What actually thinned
+the tint out between the eras is the attack cooldown — you land fewer hits, so it
+fires less often even though each flash is the same length. Stretching each flash
+is the only part of that a client can do anything about.
+
+---
+
 ## Crit particles
 
 The client half is unchanged. 26.2 spawns them exactly the way 1.8 did:
@@ -382,6 +420,7 @@ they are fine-tuning you would rarely touch:
 | `blockOffsetX/Y/Z` | `0.0` | nudges the first-person block pose |
 | `blockScale` | `1.0` | scales the blocked item |
 | `blockTransitionTicks` | `3.0` | ticks the sword takes to move into and out of the block pose |
+| `hurtTintTicks` | `20` | ticks the red damage tint stays up (vanilla is 10) |
 
 ### Settings that are preferences or trade-offs, not restorations
 

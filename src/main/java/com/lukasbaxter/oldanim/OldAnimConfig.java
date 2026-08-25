@@ -195,6 +195,48 @@ public final class OldAnimConfig {
      */
     public boolean predictCrits = false;
 
+    /**
+     * Drop the sweep attack arc.
+     *
+     * <p>A real restoration: the sweep is a 1.9 addition, and it is why
+     * spam-clicking in 26.2 looks like the game is choosing between several
+     * swings. The arm is unchanged from 1.7 -- same 6 tick duration from
+     * {@code SwingAnimation.DEFAULT}, same haste and fatigue adjustment, same
+     * "only restart past halfway" rule -- but a full-cooldown hit throws a large
+     * white arc and a partial one does not, so an irregular click rate reads as
+     * an irregular animation.
+     */
+    public boolean hideSweepAttack = true;
+
+    /**
+     * Switch off view bobbing.
+     *
+     * <p>Not a restoration -- 26.2's bob is byte-for-byte 1.7's. It is here
+     * because 26.2 stopped surfacing the vanilla View Bobbing option where you
+     * can reach it.
+     */
+    public boolean noViewBobbing = true;
+
+    /**
+     * Stop the field of view moving when your speed does: sprinting, speed
+     * potions and flying all leave it alone.
+     *
+     * <p>Also not a restoration, and here for the same reason -- 26.2 stopped
+     * surfacing the vanilla FOV Effects slider.
+     */
+    public boolean noFovEffects = true;
+
+    /**
+     * How many ticks the red damage tint stays up. Vanilla is 10, and so was
+     * 1.7's, so anything above 10 is a preference rather than a restoration.
+     *
+     * <p>What actually thinned the tint out between the eras is the attack
+     * cooldown: you land fewer hits, so it fires less often even though each
+     * flash is the same length. Stretching each flash is the part of that a
+     * client can do something about. Set to {@code 10} for vanilla.
+     */
+    public int hurtTintTicks = 20;
+
     // ---- plumbing --------------------------------------------------------
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
