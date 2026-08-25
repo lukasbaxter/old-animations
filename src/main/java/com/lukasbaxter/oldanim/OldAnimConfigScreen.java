@@ -136,6 +136,11 @@ public final class OldAnimConfigScreen extends OptionsSubScreen {
                         v -> config.predictCrits = v));
 
         this.list.addSmall(
+                toggle("debug_readout", config.debugReadout,
+                        v -> config.debugReadout = v),
+                null);
+
+        this.list.addSmall(
                 toggle("block_slowdown", config.blockSlowdown,
                         v -> config.blockSlowdown = v),
                 toggle("punch_while_using", config.punchWhileUsingItem,

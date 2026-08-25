@@ -243,6 +243,15 @@ public final class OldAnimConfig {
      */
     public int hurtTintTicks = 20;
 
+    /**
+     * Show a one-line state readout on the action bar while you are blocking.
+     *
+     * <p>Purely a diagnostic. It exists because "the stirring animation works in
+     * singleplayer but not on this server" cannot be answered by reading the
+     * source -- the interesting values are the ones the server puts you in.
+     */
+    public boolean debugReadout = false;
+
     // ---- plumbing --------------------------------------------------------
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();

@@ -55,5 +55,7 @@
   "options.oldanimations.block_transition": "Block Transition",
   "options.oldanimations.block_transition.instant": "Block Transition: Instant (1.7)",
   "options.oldanimations.block_transition.value": "Block Transition: %s ticks",
-  "options.oldanimations.block_transition.tooltip": "How long the sword takes to travel between the swing and the block pose. Instant is what 1.7 did -- there the travel you see is the swing arc winding down. A short fade smooths the hit-to-block change; a long one never finishes if you click fast, and the sword floats."
+  "options.oldanimations.block_transition.tooltip": "How long the sword takes to travel between the swing and the block pose. Instant is what 1.7 did -- there the travel you see is the swing arc winding down. A short fade smooths the hit-to-block change; a long one never finishes if you click fast, and the sword floats.",
+  "options.oldanimations.debug_readout": "Debug Readout",
+  "options.oldanimations.debug_readout.tooltip": "Show a one-line state readout on the action bar while blocking. Diagnostic only -- for working out why an animation fires on one server and not another."
 }

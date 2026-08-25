@@ -178,6 +178,51 @@ public final class BlockingState {
         player.swing(InteractionHand.MAIN_HAND, false);
     }
 
+    /**
+     * One line of state on the action bar while blocking, for working out why an
+     * animation does or does not fire on a particular server.
+     *
+     * <pre>
+     * blk  are we drawing a block at all
+     * atk  is the attack key down
+     * dig  is vanilla already destroying a block (its own swing would cover us)
+     * swg  is a swing currently running
+     * anim swing progress, 0 to 1
+     * hit  what the crosshair is on
+     * gm   game mode as the client understands it
+     * </pre>
+     */
+    public static void tickDebugReadout(Minecraft minecraft) {
+        OldAnimConfig config = OldAnimConfig.get();
+        if (!config.enabled || !config.debugReadout) {
+            return;
+        }
+        LocalPlayer player = minecraft.player;
+        if (player == null) {
+            return;
+        }
+
+        String hit = minecraft.hitResult == null
+                ? "null"
+                : minecraft.hitResult.getType().name();
+        String mode = minecraft.gameMode == null
+                ? "null"
+                : String.valueOf(minecraft.gameMode.getPlayerMode());
+        boolean digging = minecraft.gameMode != null && minecraft.gameMode.isDestroying();
+
+        minecraft.gui.hud.setOverlayMessage(
+                net.minecraft.network.chat.Component.literal(String.format(
+                        "blk=%d atk=%d dig=%d swg=%d anim=%.2f hit=%s gm=%s",
+                        blocking ? 1 : 0,
+                        minecraft.options.keyAttack.isDown() ? 1 : 0,
+                        digging ? 1 : 0,
+                        player.swinging ? 1 : 0,
+                        player.getAttackAnim(1.0f),
+                        hit,
+                        mode)),
+                false);
+    }
+
     /** True if the given hand is the one holding the blocked item. */
     public static boolean isBlockingHand(InteractionHand hand) {
         return blocking && hand == InteractionHand.MAIN_HAND;
