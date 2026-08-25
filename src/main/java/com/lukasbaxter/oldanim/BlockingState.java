@@ -290,9 +290,10 @@ public final class BlockingState {
      * anim swing progress, 0 to 1
      * hit  what the crosshair is on
      * gm   game mode as the client understands it
-     * reach entity / block interaction range, straight off the attributes. The
-     *       mod does not touch either -- it is in the readout so you can see
-     *       that rather than take it on trust.
+     * atkreach the reach actually in force for an attack, resolved through the
+     *       item's ATTACK_RANGE component and the game mode
+     * attr  the ENTITY_INTERACTION_RANGE attribute, for comparison -- the two
+     *       differ in creative and on any server that sets the component
      * </pre>
      */
     public static void tickDebugReadout(Minecraft minecraft) {
@@ -316,7 +317,7 @@ public final class BlockingState {
         minecraft.gui.hud.setOverlayMessage(
                 net.minecraft.network.chat.Component.literal(String.format(
                         "blk=%d flips=%d why=%s use=%d punch=%d atk=%d dig=%d swg=%d "
-                                + "anim=%.2f hit=%s gm=%s reach=%.2f/%.2f",
+                                + "anim=%.2f hit=%s gm=%s atkreach=%.2f attr=%.2f",
                         blocking ? 1 : 0,
                         recentFlips(),
                         reason,
@@ -328,9 +329,28 @@ public final class BlockingState {
                         player.getAttackAnim(1.0f),
                         hit,
                         mode,
-                        player.entityInteractionRange(),
-                        player.blockInteractionRange())),
+                        attackRange(player),
+                        player.entityInteractionRange())),
                 false);
+    }
+
+    /**
+     * The attack reach actually in force, which is not the same number as the
+     * {@code ENTITY_INTERACTION_RANGE} attribute.
+     *
+     * <p>26.2 attacks through an {@code ATTACK_RANGE} item component, and that
+     * component carries a <em>separate, larger pair of creative values</em>.
+     * {@code effectiveMaxRange} picks between them by game mode, so a creative
+     * player reaches considerably further than the attribute alone suggests --
+     * and a server can hand out an item with the component set to whatever it
+     * likes.
+     */
+    private static float attackRange(LocalPlayer player) {
+        net.minecraft.world.item.component.AttackRange range =
+                player.getMainHandItem().getOrDefault(
+                        net.minecraft.core.component.DataComponents.ATTACK_RANGE,
+                        net.minecraft.world.item.component.AttackRange.defaultFor(player));
+        return range.effectiveMaxRange(player);
     }
 
     /**
