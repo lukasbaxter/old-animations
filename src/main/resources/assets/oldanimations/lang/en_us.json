@@ -2,48 +2,39 @@
   "key.category.oldanimations.main": "Old Animations",
   "key.oldanimations.open_config": "Open Config",
   "key.oldanimations.toggle": "Toggle Old Animations",
-
   "text.oldanimations.toggled_on": "Old Animations: on",
   "text.oldanimations.toggled_off": "Old Animations: off",
-
   "options.oldanimations.title": "Old Animations",
-
   "options.oldanimations.enabled": "Old Animations",
   "options.oldanimations.enabled.tooltip": "Master switch. When off, every animation below falls back to vanilla.",
-
   "options.oldanimations.sword_blocking": "Sword Blocking",
   "options.oldanimations.sword_blocking.tooltip": "Hold use with a sword to show the old blocking pose. Visual only - swords still do not block damage in 26.2.",
-
   "options.oldanimations.block_hit": "Blockhit",
   "options.oldanimations.block_hit.tooltip": "Keep playing the swing arc while blocking, the way 1.7 did.",
-
   "options.oldanimations.third_person_block": "Blocking in Third Person",
   "options.oldanimations.third_person_block.tooltip": "Also pose the arm in F5 view. Applies to your own player only - the server never reports other players as blocking.",
-
   "options.oldanimations.block_with_axes": "Block With Axes",
   "options.oldanimations.block_with_axes.tooltip": "Allow the blocking pose for axes as well as swords.",
-
   "options.oldanimations.old_sneak_pose": "1.7 Sneak Pose",
   "options.oldanimations.old_sneak_pose.tooltip": "Third-person crouch posed the 1.7 way: legs raised, head barely lowered, body and arms left alone.",
-
   "options.oldanimations.old_sneak_camera": "1.7 Sneak Camera",
   "options.oldanimations.old_sneak_camera.tooltip": "The 1.7 crouch curve: instant going down, eased coming back up. 26.2 eases both ways, 1.8 snapped both ways.",
-
   "options.oldanimations.old_sneak_eye_height": "1.7 Sneak Eye Height",
   "options.oldanimations.old_sneak_eye_height.tooltip": "Crouch at 1.54 instead of 1.27. Moves the camera only - aiming still originates from the real eye position, so the crosshair sits slightly low while crouched.",
-
   "options.oldanimations.old_block_arm_pose": "1.7 Blocking Arm",
   "options.oldanimations.old_block_arm_pose.tooltip": "Drop the 30 degree inward yaw and head tracking modern blocking adds to the arm. Also affects shields.",
-
   "options.oldanimations.armor_hurt_tint": "Red Armor On Hit",
   "options.oldanimations.armor_hurt_tint.tooltip": "Tint armour red with its wearer when they take a hit. 26.2 only reddens bare skin, so armoured players barely flinch.",
-
   "options.oldanimations.no_health_flash": "No Heart Flash",
   "options.oldanimations.no_health_flash.tooltip": "1.7 hearts did not flash white when you took or regained damage.",
-
   "options.oldanimations.hide_attack_indicator": "Hide Attack Cooldown",
   "options.oldanimations.hide_attack_indicator.tooltip": "Hide the attack cooldown indicator, which 1.7 had no equivalent of. Vanilla can also do this under Controls > Attack Indicator.",
-
   "options.oldanimations.fixed_swing_duration": "Fixed 6-Tick Swing",
-  "options.oldanimations.fixed_swing_duration.tooltip": "Pin every swing to 6 ticks. Most items already use 6, so this only changes items with a custom swing duration."
+  "options.oldanimations.fixed_swing_duration.tooltip": "Pin every swing to 6 ticks. Most items already use 6, so this only changes items with a custom swing duration.",
+  "options.oldanimations.instant_item_swap": "Instant Item Swap",
+  "options.oldanimations.instant_item_swap.tooltip": "Skip the equip animation and put a newly selected item straight in your hand. Not 1.7 (1.7 had the same ramp 26.2 does), just tighter to switch mid-fight.",
+  "options.oldanimations.instant_unsneak": "Instant Unsneak",
+  "options.oldanimations.instant_unsneak.tooltip": "Snap the camera back up on release instead of easing. Also not 1.7 -- 1.7 eased up -- but 26.2 drops the camera much further than 1.7 did, so the ease is more noticeable.",
+  "options.oldanimations.block_slowdown": "Blocking Slows You Down",
+  "options.oldanimations.block_slowdown.tooltip": "1.7 cut movement to 20% and stopped sprinting while an item was in use. This is the only setting here that is not purely visual: it changes where you actually go. Off by default, since blocking gives you no damage reduction in 26.2 to pay for it."
 }

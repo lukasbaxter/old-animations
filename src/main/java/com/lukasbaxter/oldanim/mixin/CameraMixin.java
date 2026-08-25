@@ -14,10 +14,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * 1.7 sneak camera.
  *
- * <p>The 1.7 crouch camera is <em>asymmetric</em>: dropping into a crouch is
- * instant, but standing back up eases toward the new height at 50% per tick.
- * 26.2 eases in both directions, which makes entering a crouch feel soft, and
- * 1.8 was instant in both directions, which is a different feel again.
+ * <p>The 1.7 crouch camera is <em>asymmetric</em>, and it is asymmetric by
+ * accident rather than by design. 1.7 never lowered the eye height at all: it
+ * set {@code ySize = 0.2} while sneak was held, and {@code Entity.moveEntity}
+ * multiplied {@code ySize} by {@code 0.4} every tick. The camera sat at
+ * {@code posY = bbMinY + yOffset - ySize}, so holding sneak parked it exactly
+ * {@code 0.2 * 0.4 = 0.08} low from the very first tick (instant), and letting
+ * go left {@code ySize} decaying 0.08, 0.032, 0.0128... back to zero -- 60% of
+ * the remaining gap closed per tick, gone in about four ticks.
+ *
+ * <p>26.2 eases in both directions instead.
  *
  * <p>Getting this backwards is easy -- an earlier version of this mod snapped
  * both ways, which is the 1.8 behaviour, not the 1.7 one.
@@ -33,8 +39,13 @@ public abstract class CameraMixin {
     private static final float OLD_CROUCH_EYE_HEIGHT = 1.54f;
     /** 26.2 crouch eye height, used to keep the override proportional to entity scale. */
     private static final float NEW_CROUCH_EYE_HEIGHT = 1.27f;
-    /** Vanilla's per-tick approach rate, which 1.7 also used on the way up. */
-    private static final float EASE_RATE = 0.5f;
+    /**
+     * Fraction of the remaining gap closed per tick on the way back up.
+     * 1.7's {@code ySize *= 0.4F} leaves 40% of the gap, so it closes 60%.
+     * This was 0.5 before v1.4.0, which made standing up drag noticeably
+     * longer than 1.7 did.
+     */
+    private static final float EASE_RATE = 0.6f;
 
     @Shadow private float eyeHeight;
     @Shadow private float eyeHeightOld;
@@ -58,7 +69,13 @@ public abstract class CameraMixin {
         float previous = this.eyeHeightOld;
 
         if (config.oldSneakCamera) {
-            this.eyeHeight = target < previous ? target : previous + (target - previous) * EASE_RATE;
+            if (target < previous || config.instantUnsneak) {
+                // Going down is instant in 1.7. instantUnsneak makes coming back
+                // up instant too, which is not 1.7 -- it just feels tighter.
+                this.eyeHeight = target;
+            } else {
+                this.eyeHeight = previous + (target - previous) * EASE_RATE;
+            }
         } else if (config.oldSneakEyeHeight) {
             // Not using the 1.7 curve, but still honour the 1.7 height.
             this.eyeHeight = previous + (target - previous) * EASE_RATE;

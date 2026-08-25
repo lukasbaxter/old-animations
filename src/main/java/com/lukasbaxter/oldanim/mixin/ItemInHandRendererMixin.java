@@ -4,9 +4,12 @@ import com.lukasbaxter.oldanim.BlockingState;
 import com.lukasbaxter.oldanim.OldAnimConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
@@ -46,9 +49,42 @@ public abstract class ItemInHandRendererMixin {
         throw new AssertionError("mixin shadow");
     }
 
-    @Shadow
-    private void swingArm(float attack, PoseStack poseStack, int invert, HumanoidArm arm) {
-        throw new AssertionError("mixin shadow");
+    @Shadow private ItemStack mainHandItem;
+    @Shadow private ItemStack offHandItem;
+    @Shadow private float mainHandHeight;
+    @Shadow private float oMainHandHeight;
+    @Shadow private float offHandHeight;
+    @Shadow private float oOffHandHeight;
+
+    /**
+     * Instant item swap.
+     *
+     * <p>Vanilla's {@code tick} walks the hand height toward its target by at
+     * most 0.4 a tick, and only swaps which stack is drawn once that height has
+     * reached the bottom -- that is the dip you see when changing slots. With
+     * this on, the newly held stack becomes the drawn one immediately and the
+     * height is pinned at full, so there is nothing to animate.
+     *
+     * <p>Left alone while the hands are busy, so vanilla can still tuck the
+     * item away when it needs to.
+     */
+    @Inject(method = "tick()V", at = @At("TAIL"))
+    private void oldanimations$instantItemSwap(CallbackInfo ci) {
+        OldAnimConfig config = OldAnimConfig.get();
+        if (!config.enabled || !config.instantItemSwap) {
+            return;
+        }
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null || player.isHandsBusy()) {
+            return;
+        }
+
+        this.mainHandItem = player.getMainHandItem();
+        this.offHandItem = player.getOffhandItem();
+        this.mainHandHeight = 1.0f;
+        this.oMainHandHeight = 1.0f;
+        this.offHandHeight = 1.0f;
+        this.oOffHandHeight = 1.0f;
     }
 
     @Inject(
@@ -91,10 +127,32 @@ public abstract class ItemInHandRendererMixin {
         // Base hand placement, including the equip/swap drop.
         this.applyItemArmTransform(poseStack, arm, inverseArmHeight);
 
-        // The 1.7 blockhit: the swing arc is composed on top of the block pose
-        // instead of replacing it, which is what makes a blockhit read as a hit.
+        // The 1.7 blockhit.
+        //
+        // 26.2's swingArm() does two things: a positional bob, then
+        // applyItemArmAttackTransform (which is Ry(45) + the swing rotations +
+        // scale(0.4)). 1.7 applied NEITHER of those wholesale while an item was
+        // in use. Its bob sat in the `else` branch that blocking skipped, and
+        // the Ry(45) and the 0.4 are already folded into applyBlockPose below --
+        // so calling swingArm here scaled the sword to 0.4 and yawed it another
+        // 45 degrees on every click, which is what threw it off screen.
+        //
+        // What 1.7 did apply, unconditionally, was the swing rotations, sitting
+        // between the Ry(45) and the scale:
+        //
+        //     Ry(45); Ry(-f*20); Rz(-g*20); Rx(-g*80); scale(0.4); blockTransform
+        //
+        // Since applyBlockPose is the fold of Ry(45) * scale(0.4) * block, the
+        // swing goes in front of it conjugated back out of that frame:
+        // Ry(45) * SWING * Ry(-45).
         if (config.blockHit && attack > 0.0f) {
-            this.swingArm(attack, poseStack, invert, arm);
+            float f = Mth.sin(attack * attack * (float) Math.PI);
+            float g = Mth.sin(Mth.sqrt(attack) * (float) Math.PI);
+            poseStack.mulPose(Axis.YP.rotationDegrees(invert * 45.0f));
+            poseStack.mulPose(Axis.YP.rotationDegrees(invert * -f * 20.0f));
+            poseStack.mulPose(Axis.ZP.rotationDegrees(invert * -g * 20.0f));
+            poseStack.mulPose(Axis.XP.rotationDegrees(-g * 80.0f));
+            poseStack.mulPose(Axis.YP.rotationDegrees(invert * -45.0f));
         }
 
         applyBlockPose(poseStack, config, invert);

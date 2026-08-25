@@ -73,7 +73,14 @@ public final class OldAnimConfigScreen extends OptionsSubScreen {
         this.list.addSmall(
                 toggle("fixed_swing_duration", config.fixedSwingDuration,
                         v -> config.fixedSwingDuration = v),
-                null);
+                toggle("instant_item_swap", config.instantItemSwap,
+                        v -> config.instantItemSwap = v));
+
+        this.list.addSmall(
+                toggle("instant_unsneak", config.instantUnsneak,
+                        v -> config.instantUnsneak = v),
+                toggle("block_slowdown", config.blockSlowdown,
+                        v -> config.blockSlowdown = v));
     }
 
     @Override
