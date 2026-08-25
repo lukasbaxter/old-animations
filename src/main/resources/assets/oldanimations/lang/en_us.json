@@ -51,5 +51,9 @@
   "options.oldanimations.no_view_bobbing": "No View Bobbing",
   "options.oldanimations.no_view_bobbing.tooltip": "Switch off view bobbing. Not a restoration -- 26.2's bob is byte-for-byte 1.7's -- but 26.2 no longer surfaces the vanilla View Bobbing option.",
   "options.oldanimations.no_fov_effects": "No FOV Effects",
-  "options.oldanimations.no_fov_effects.tooltip": "Stop the field of view moving when your speed does. Sprinting, speed potions and flying all leave it alone. Here because 26.2 no longer surfaces the vanilla FOV Effects slider."
+  "options.oldanimations.no_fov_effects.tooltip": "Stop the field of view moving when your speed does. Sprinting, speed potions and flying all leave it alone. Here because 26.2 no longer surfaces the vanilla FOV Effects slider.",
+  "options.oldanimations.block_transition": "Block Transition",
+  "options.oldanimations.block_transition.instant": "Block Transition: Instant (1.7)",
+  "options.oldanimations.block_transition.value": "Block Transition: %s ticks",
+  "options.oldanimations.block_transition.tooltip": "How long the sword takes to travel between the swing and the block pose. Instant is what 1.7 did -- there the travel you see is the swing arc winding down. A short fade smooths the hit-to-block change; a long one never finishes if you click fast, and the sword floats."
 }

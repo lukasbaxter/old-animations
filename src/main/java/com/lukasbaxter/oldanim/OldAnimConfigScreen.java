@@ -44,6 +44,19 @@ public final class OldAnimConfigScreen extends OptionsSubScreen {
                 value -> config.sneakCameraDrop = value / 100.0f);
     }
 
+    private OptionInstance<Integer> blockTransitionSlider() {
+        return new OptionInstance<>(
+                "options.oldanimations.block_transition",
+                OptionInstance.cachedConstantTooltip(
+                        Component.translatable("options.oldanimations.block_transition.tooltip")),
+                (caption, value) -> value <= 1
+                        ? Component.translatable("options.oldanimations.block_transition.instant")
+                        : Component.translatable("options.oldanimations.block_transition.value", value),
+                new OptionInstance.IntRange(1, 6),
+                Math.max(1, Math.round(config.blockTransitionTicks)),
+                value -> config.blockTransitionTicks = value.floatValue());
+    }
+
     private static OptionInstance<Boolean> toggle(
             String key, boolean initial, java.util.function.Consumer<Boolean> setter) {
         return OptionInstance.createBoolean(
@@ -65,6 +78,8 @@ public final class OldAnimConfigScreen extends OptionsSubScreen {
         this.list.addSmall(
                 toggle("sword_blocking", config.swordBlocking, v -> config.swordBlocking = v),
                 toggle("block_hit", config.blockHit, v -> config.blockHit = v));
+
+        this.list.addBig(this.blockTransitionSlider());
 
         this.list.addSmall(
                 toggle("third_person_block", config.swordBlockingThirdPerson,

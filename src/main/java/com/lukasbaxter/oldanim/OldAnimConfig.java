@@ -184,7 +184,7 @@ public final class OldAnimConfig {
      * sword floats at whatever angle the timing landed on. Raise it above 1 if
      * you want the fade anyway.
      */
-    public float blockTransitionTicks = 1.0f;
+    public float blockTransitionTicks = 2.0f;
 
     /**
      * Spawn crit particles locally whenever a hit meets 1.7/1.8's crit condition.

@@ -209,14 +209,14 @@ travel you see between the hit and the block in a real client is the **swing arc
 winding down**, and that arc is a pure function of swing progress — so it follows
 the same path every time, in both angle and position.
 
-v1.7.0 tried to soften that with a fade, which was the wrong mechanism. A fade is
-driven by how long you happened to hold the button, so with fast clicks it never
-finishes and the sword floats at whatever intermediate angle the timing landed
-on. `blockTransitionTicks` is `1` (no transition) as of v1.10.0. Raise it if you
-want the fade anyway.
+A fade on top of that is driven by how long you happened to hold the button, so a
+long one never finishes when you click fast and the sword floats at whatever
+intermediate angle the timing landed on. **Block Transition** in the config
+screen runs 1 (instant, as 1.7) to 6 ticks, defaulting to 2 — short enough to
+complete between clicks, long enough to see.
 
-**Blockhit While Mining** restarts the animation locally when vanilla lets it
-lapse, while you are aimed at a block with attack held. It uses
+**Blockhit While Mining** restarts the animation locally whenever vanilla is not
+already driving a break of its own, with attack held. It uses
 `LivingEntity.swing(hand, false)` rather than `LocalPlayer.swing(hand)`, so no
 swing packet is sent: this is a local animation only and other players see
 exactly what vanilla would have shown them. On by default.
@@ -295,6 +295,25 @@ the red flash. 1.7 also used 10 ticks, so this is taste. What actually thinned
 the tint out between the eras is the attack cooldown — you land fewer hits, so it
 fires less often even though each flash is the same length. Stretching each flash
 is the only part of that a client can do anything about.
+
+---
+
+## The sneak double bounce (MC-248973)
+
+Tap sneak once on a server and the camera dips **twice**. This is a vanilla bug,
+not something this mod introduced: the client crouches immediately, tells the
+server, and the server sends the state back — so the client applies its own
+action a second time, one round trip later. It shows up on servers and on laggy
+singleplayer worlds, and your character only ever crouches once.
+
+Vanilla's easing mostly smears it into one soft movement. Snapping instantly does
+not, which is why it became obvious here.
+
+The fix: for **your own** player the input is the truth and the synced pose is an
+echo of it, so a pose that disagrees with the key you are holding is ignored —
+but only for 5 ticks. A disagreement that outlives that is real (you are wedged
+under a block and cannot stand up), and then the pose wins. Other players are
+unaffected, since for them the synced pose is all there is.
 
 ---
 
@@ -424,7 +443,7 @@ they are fine-tuning you would rarely touch:
 |---|---|---|
 | `blockOffsetX/Y/Z` | `0.0` | nudges the first-person block pose |
 | `blockScale` | `1.0` | scales the blocked item |
-| `blockTransitionTicks` | `1.0` | `1` = no transition, as 1.7. Above 1 fades into the block pose over that many ticks |
+| `blockTransitionTicks` | `2.0` | ticks to travel between swing and block pose; `1` = instant, as 1.7. Also a slider in the config screen |
 | `hurtTintTicks` | `20` | ticks the red damage tint stays up (vanilla is 10) |
 
 ### Settings that are preferences or trade-offs, not restorations

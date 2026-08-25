@@ -5,7 +5,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.HitResult;
 
 /**
  * Tracks whether the local player is "blocking" in the 1.7 sense: holding the
@@ -160,10 +159,16 @@ public final class BlockingState {
         if (!minecraft.options.keyAttack.isDown()) {
             return;
         }
-        // Only while actually aimed at a block, so holding attack at thin air
-        // does not turn into a permanent windmill.
-        if (minecraft.hitResult == null
-                || minecraft.hitResult.getType() != HitResult.Type.BLOCK) {
+        // Only when vanilla is not already driving a break of its own -- that is
+        // the whole point, and it also stops the two doubling up.
+        //
+        // This used to also require the crosshair to be on a block, which is why
+        // it worked in singleplayer and not on a server: in singleplayer the
+        // block is breakable, so the swing you saw was vanilla's own. On a server
+        // that refuses the break the fallback has to carry it, and gating on the
+        // hit result meant it did not fire. The cost of dropping that check is
+        // that holding attack at thin air while blocking also stirs.
+        if (minecraft.gameMode != null && minecraft.gameMode.isDestroying()) {
             return;
         }
 
