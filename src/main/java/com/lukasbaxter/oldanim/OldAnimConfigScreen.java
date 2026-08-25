@@ -82,6 +82,11 @@ public final class OldAnimConfigScreen extends OptionsSubScreen {
                         v -> config.hideOwnArrowTrail = v));
 
         this.list.addSmall(
+                toggle("block_mining_swing", config.blockMiningSwing,
+                        v -> config.blockMiningSwing = v),
+                null);
+
+        this.list.addSmall(
                 toggle("block_slowdown", config.blockSlowdown,
                         v -> config.blockSlowdown = v),
                 toggle("punch_while_using", config.punchWhileUsingItem,

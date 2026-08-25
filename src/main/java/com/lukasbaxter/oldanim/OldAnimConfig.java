@@ -157,6 +157,17 @@ public final class OldAnimConfig {
      */
     public boolean hideOwnArrowTrail = true;
 
+    /**
+     * Keep the swing animation cycling while you hold attack on a block during
+     * a block, even when nothing is actually being destroyed.
+     *
+     * <p>26.2 only swings while a break is progressing, so on a server that
+     * refuses the break -- or in adventure mode -- the blockhit has nothing to
+     * compose onto and the sword sits still. Local animation only: no swing
+     * packet is sent, so other players see exactly what vanilla would show.
+     */
+    public boolean blockMiningSwing = true;
+
     // ---- plumbing --------------------------------------------------------
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();

@@ -1,14 +1,34 @@
 package com.lukasbaxter.oldanim.mixin;
 
+import com.lukasbaxter.oldanim.BlockingState;
 import com.lukasbaxter.oldanim.OldAnimConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.protocol.game.ServerboundSwingPacket;
+import net.minecraft.world.InteractionHand;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 /**
- * Attacking while an item is in use -- bow punching, and block-hitting with a
+ * Two things in the click paths.
+ *
+ * <h2>The use-item swing, while blocking</h2>
+ * A right click that interacts with something makes {@code startUseItem} call
+ * {@code player.swing(hand)}. That is fine normally, but the mod's block is
+ * held on the same button, so every press while blocking played a swing arc on
+ * top of the block pose -- releasing and quickly re-blocking read as the sword
+ * letting go and re-blocking a second time. 1.7 never showed this because
+ * blocking <em>was</em> the right click and consumed it; 26.2 still runs the
+ * normal interaction underneath, which is what lets you open a door with a
+ * sword out.
+ *
+ * <p>Only the animation is dropped. The {@code ServerboundSwingPacket} that
+ * {@code LocalPlayer.swing} would have sent is sent by hand instead, so the
+ * traffic is byte-identical to vanilla's and other players still see the arm
+ * move. Nothing is suppressed on the wire.
+ *
+ * <h2>Attacking while an item is in use</h2> -- bow punching, and block-hitting with a
  * drawn bow. Off unless {@code punchWhileUsingItem} is enabled.
  *
  * <p>1.7 allowed this by simply not checking. Its {@code clickMouse} called
@@ -29,6 +49,22 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  */
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin {
+
+    @Redirect(
+            method = "startUseItem()V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/player/LocalPlayer;"
+                            + "swing(Lnet/minecraft/world/InteractionHand;)V"))
+    private void oldanimations$noUseSwingWhileBlocking(LocalPlayer player, InteractionHand hand) {
+        OldAnimConfig config = OldAnimConfig.get();
+        if (config.enabled && config.swordBlocking && BlockingState.isBlocking()) {
+            // Same packet vanilla would have sent, without the local animation.
+            player.connection.send(new ServerboundSwingPacket(hand));
+            return;
+        }
+        player.swing(hand);
+    }
 
     @Redirect(
             method = "startAttack()Z",

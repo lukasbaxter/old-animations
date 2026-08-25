@@ -25,6 +25,7 @@ each feature below corresponds to a specific behaviour that actually changed.
 | **Blocking slowdown** | swords aren't "in use", so no slowdown | 20% movement, no sprinting | ✅ (opt-in, not visual-only) |
 | **Attacking while using** | `startAttack` bails on `isHandsBusy()` | never checked, so bow punching worked | ✅ (opt-in, sends packets) |
 | **Own arrow crit trail** | crit particles stream behind it | same trail | ➖ removable (preference) |
+| **Blockhit while mining** | only swings while a break progresses | swung regardless | ✅ (local animation only) |
 
 ### What is deliberately *not* here
 
@@ -175,6 +176,35 @@ larger than the `(0.05, 0, -0.1)` nudge it came from.
 
 Mirrored across the YZ plane for a left-handed main arm. 1.7 had no left-handed
 players, so that half is an extrapolation rather than a restoration.
+
+---
+
+## Two things about the block that were wrong
+
+**The double blockhit on re-press.** A right click that interacts with something
+makes `Minecraft.startUseItem` call `player.swing(hand)`. The mod's block is held
+on that same button, so every press while blocking played a swing arc on top of
+the block pose — releasing and quickly re-blocking read as the sword letting go
+and re-blocking a second time.
+
+1.7 never showed this because blocking *was* the right click and consumed it.
+26.2 still runs the normal interaction underneath, which is what lets you open a
+door with a sword out, so the interaction stays and only the animation is
+dropped. The `ServerboundSwingPacket` that `swing` would have sent is sent by
+hand instead, so the traffic is byte-identical to vanilla's and other players
+still see your arm move. Fixed in v1.6.0.
+
+**No stirring animation while mining.** 26.2 only swings while something is
+actually being destroyed — `continueAttack` calls `player.swing` inside the
+branch where `continueDestroyBlock` returned true. On a server that refuses the
+break, or in adventure mode, nothing is destroyed, so nothing swings and the
+blockhit has nothing to compose onto.
+
+**Blockhit While Mining** restarts the animation locally when vanilla lets it
+lapse, while you are aimed at a block with attack held. It uses
+`LivingEntity.swing(hand, false)` rather than `LocalPlayer.swing(hand)`, so no
+swing packet is sent: this is a local animation only and other players see
+exactly what vanilla would have shown them. On by default.
 
 ---
 

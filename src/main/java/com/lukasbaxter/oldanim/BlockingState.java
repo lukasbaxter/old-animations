@@ -5,6 +5,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.HitResult;
 
 /**
  * Tracks whether the local player is "blocking" in the 1.7 sense: holding the
@@ -84,6 +85,45 @@ public final class BlockingState {
         // Tridents deliberately absent: they have a real use animation, so the
         // isRealUseItem check above already excluded them.
         return config.blockWithAxes && stack.is(ItemTags.AXES);
+    }
+
+    /**
+     * Keeps the swing animation cycling while you hold attack on a block during
+     * a block -- the 1.7 "stirring" look.
+     *
+     * <p>26.2 only swings while something is actually being destroyed:
+     * {@code Minecraft.continueAttack} calls {@code player.swing} inside the
+     * branch where {@code continueDestroyBlock} returned true. On a server that
+     * refuses the break, or in adventure mode, nothing is destroyed, so nothing
+     * swings and the blockhit has nothing to compose onto.
+     *
+     * <p>This restarts the animation locally when vanilla has let it lapse. It
+     * uses {@code LivingEntity.swing(hand, false)} rather than
+     * {@code LocalPlayer.swing(hand)}, so no swing packet is sent -- this is a
+     * local animation only, and other players see exactly what vanilla would
+     * have shown them.
+     */
+    public static void tickMiningSwing(Minecraft minecraft) {
+        OldAnimConfig config = OldAnimConfig.get();
+        if (!config.enabled || !config.blockMiningSwing || !blocking) {
+            return;
+        }
+
+        LocalPlayer player = minecraft.player;
+        if (player == null || player.swinging || minecraft.gui.screen() != null) {
+            return;
+        }
+        if (!minecraft.options.keyAttack.isDown()) {
+            return;
+        }
+        // Only while actually aimed at a block, so holding attack at thin air
+        // does not turn into a permanent windmill.
+        if (minecraft.hitResult == null
+                || minecraft.hitResult.getType() != HitResult.Type.BLOCK) {
+            return;
+        }
+
+        player.swing(InteractionHand.MAIN_HAND, false);
     }
 
     /** True if the given hand is the one holding the blocked item. */
