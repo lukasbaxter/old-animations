@@ -43,5 +43,7 @@
   "options.oldanimations.block_mining_swing.tooltip": "Keep the swing cycling while you hold attack on a block during a block, even when the server refuses the break. Local animation only, no swing packet is sent.",
   "options.oldanimations.sneak_camera_drop": "Sneak Camera Depth",
   "options.oldanimations.sneak_camera_drop.value": "Sneak Camera Depth: %s blocks",
-  "options.oldanimations.sneak_camera_drop.tooltip": "How far the camera drops when you crouch. 1.7 dropped 0.08, 26.2 drops 0.35. Anything below 0.35 puts the camera above the eye that block and entity picking starts from, so the crosshair sits that far high while crouched."
+  "options.oldanimations.sneak_camera_drop.tooltip": "How far the camera drops when you crouch. 1.7 dropped 0.08, 26.2 drops 0.35. Anything below 0.35 puts the camera above the eye that block and entity picking starts from, so the crosshair sits that far high while crouched.",
+  "options.oldanimations.predict_crits": "Predicted Crit Particles",
+  "options.oldanimations.predict_crits.tooltip": "Spawn crit particles locally on any falling hit, the way 1.7 and 1.8 critted. 26.2 gates crits behind the attack cooldown server-side. WARNING: these particles say \"1.8 would have critted\", not \"this dealt crit damage\", so they can disagree with what the server did."
 }

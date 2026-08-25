@@ -13,6 +13,7 @@
 		"ItemInHandRendererMixin",
 		"LivingEntityMixin",
 		"MinecraftMixin",
+		"MultiPlayerGameModeMixin",
 		"LocalPlayerMixin"
 	],
 	"injectors": {

@@ -180,6 +180,21 @@ public final class OldAnimConfig {
      */
     public float blockTransitionTicks = 3.0f;
 
+    /**
+     * Spawn crit particles locally whenever a hit meets 1.7/1.8's crit condition.
+     *
+     * <p>The client half is unchanged in 26.2 -- it spawns crit particles the
+     * same way 1.8 did. What changed is who decides: 1.9 combat gated crits
+     * behind the attack cooldown, so a 26.2 server sends no crit packet unless
+     * the cooldown is essentially full. That is server-side.
+     *
+     * <p><strong>Off by default because the particles can lie.</strong> They say
+     * "1.8 would have critted this", not "this hit dealt crit damage". If the
+     * server does crit as well you get both emitters. Nothing is sent and
+     * nothing is suppressed; the particles exist only on this client.
+     */
+    public boolean predictCrits = false;
+
     // ---- plumbing --------------------------------------------------------
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
