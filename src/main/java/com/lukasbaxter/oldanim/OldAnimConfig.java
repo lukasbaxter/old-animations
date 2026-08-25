@@ -83,6 +83,39 @@ public final class OldAnimConfig {
     /** Force every swing to 6 ticks, ignoring per-item swing durations. */
     public boolean fixedSwingDuration = false;
 
+    /**
+     * Skip the equip animation and put a newly selected item straight in your
+     * hand at full height.
+     *
+     * <p>Not a 1.7 restoration -- 1.7 ramped the item up at 0.4 per tick just
+     * like 26.2 does. This is here because the dip is the one bit of the swap
+     * you feel when switching mid-fight.
+     */
+    public boolean instantItemSwap = true;
+
+    /**
+     * Snap the camera back up when you release sneak instead of easing.
+     *
+     * <p>Also not 1.7: 1.7's crouch camera eased on the way up (see
+     * {@code oldSneakCamera}). Turn this on if the ease still reads as too
+     * heavy -- it is a bigger drop in 26.2 than it ever was in 1.7, because
+     * 26.2 crouches to 1.27 where 1.7 only went to 1.54.
+     */
+    public boolean instantUnsneak = false;
+
+    /**
+     * Slow you to 20% movement while blocking, and stop you sprinting, the way
+     * 1.7 did for any item in use.
+     *
+     * <p><strong>Off by default, and the one setting here that is not purely
+     * visual.</strong> Everything else in this mod only changes what is drawn.
+     * This changes where you actually go, so your position packets differ from
+     * what they would otherwise be. Nothing an anticheat objects to -- you are
+     * moving slower, never faster -- but it is a real handicap, and in 26.2
+     * blocking buys you no damage reduction to pay for it.
+     */
+    public boolean blockSlowdown = false;
+
     // ---- plumbing --------------------------------------------------------
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();

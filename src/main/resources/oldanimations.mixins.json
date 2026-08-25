@@ -10,7 +10,8 @@
 		"AvatarRendererMixin",
 		"ItemInHandLayerMixin",
 		"ItemInHandRendererMixin",
-		"LivingEntityMixin"
+		"LivingEntityMixin",
+		"LocalPlayerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

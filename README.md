@@ -22,6 +22,7 @@ each feature below corresponds to a specific behaviour that actually changed.
 | **Heart flash** | hearts flash white on damage/heal | no flash | ✅ |
 | **Attack cooldown indicator** | crosshair/hotbar indicator | no equivalent | ✅ |
 | **Swing duration** | from the item's `SwingAnimation` component | always 6 ticks | ✅ (opt-in) |
+| **Blocking slowdown** | swords aren't "in use", so no slowdown | 20% movement, no sprinting | ✅ (opt-in, not visual-only) |
 
 ### What is deliberately *not* here
 
@@ -38,7 +39,9 @@ each feature below corresponds to a specific behaviour that actually changed.
 ## What it cannot do
 
 This mod only draws things differently. It sends nothing, suppresses nothing, and
-changes no packet. That puts a hard limit on two things worth being clear about:
+changes no packet — with exactly one opt-in exception, **Blocking Slows You Down**,
+which is called out below. That puts a hard limit on two things worth being clear
+about:
 
 1. **Sword blocking does not block damage.** In 1.7 blocking halved incoming
    damage; that is server-side and gone in 26.2. You get the pose and the muscle
@@ -53,16 +56,29 @@ changes no packet. That puts a hard limit on two things worth being clear about:
 Attack cooldown, reach, knockback and sweep attacks are all server-side gameplay
 and are likewise untouched.
 
-### A correction, kept here on purpose
+### How the sneak camera actually worked
 
-v1.0.x shipped an "Instant Sneak Camera" toggle that snapped the camera in **both**
-directions. That is the **1.8** behaviour, not the 1.7 one. 1.7's crouch camera is
-asymmetric: instant on the way down, eased at 50% per tick on the way back up
-(that asymmetry is what Orange's mod calls "longer unsneak"). Fixed in v1.1.0,
-and the setting is now `1.7 Sneak Camera`.
+1.7 never lowered the eye height when you crouched. It set `ySize = 0.2` while
+sneak was held, and `Entity.moveEntity` multiplied `ySize` by `0.4` every tick.
+The camera sat at `posY = bbMinY + yOffset - ySize`, so:
 
-Since 26.2 eases in both directions, the audible difference is entering a crouch,
-not leaving one.
+- holding sneak parked it exactly `0.2 × 0.4 = 0.08` low **from the first tick** —
+  instant, and that 0.08 is where the familiar 1.62 → 1.54 comes from
+- releasing left `ySize` decaying 0.08 → 0.032 → 0.0128 → … — **60% of the
+  remaining gap per tick**, gone in about four ticks
+
+So the asymmetry is real, but it fell out of a smoothing variable rather than
+being designed. 26.2 eases in both directions instead.
+
+Two corrections have been made here. v1.0.x snapped both ways, which is 1.8, not
+1.7 (fixed in v1.1.0). v1.1.0–v1.3.0 then eased back up at 50% per tick instead
+of 60%, which made standing up drag longer than it ever did in 1.7 (fixed in
+v1.4.0).
+
+One caveat worth knowing even after that fix: 1.7 was easing a **0.08** drop, and
+26.2 is easing a **0.35** one (1.62 → 1.27), so the same curve reads as much more
+movement. `Instant Unsneak` turns the ease off entirely if it still feels heavy,
+and `1.7 Sneak Eye Height` restores the small drop at the cost noted below.
 
 ### Caveat on `1.7 Sneak Eye Height`
 
@@ -73,6 +89,30 @@ slightly below where you are actually aiming. Turn it on if you want the 1.7 loo
 leave it off if you want your aim to match the reticle. `Instant Sneak Camera` is
 the part of 1.7 sneak you actually feel, and it has no such tradeoff — it is on by
 default.
+
+---
+
+## How the blockhit is derived
+
+26.2's `swingArm()` does two things: a positional bob, then
+`applyItemArmAttackTransform`, which is `Ry(45)` + the swing rotations +
+`scale(0.4)`.
+
+1.7 applied neither of those wholesale while an item was in use. Its bob lived in
+the `else` branch that blocking skipped entirely, and the `Ry(45)` and the `0.4`
+are already folded into the block pose. What 1.7 *did* apply, unconditionally,
+was the swing rotations, sitting between the `Ry(45)` and the scale:
+
+```
+Ry(45); Ry(-f*20); Rz(-g*20); Rx(-g*80); scale(0.4); blockTransform
+    f = sin(swing² · π)      g = sin(√swing · π)
+```
+
+Versions before v1.4.0 called `swingArm()` here, which meant every click also
+shrank the sword to 0.4 and yawed it another 45°, on top of a pose that already
+included both. That is why the sword left the screen while spam-clicking. Since
+the block pose is the fold of `Ry(45) · scale(0.4) · block`, the swing now goes in
+front of it conjugated back out of that frame: `Ry(45) · SWING · Ry(-45)`.
 
 ---
 
@@ -218,6 +258,14 @@ they are fine-tuning you would rarely touch:
 |---|---|---|
 | `blockOffsetX/Y/Z` | `0.0` | nudges the first-person block pose |
 | `blockScale` | `1.0` | scales the blocked item |
+
+### Three settings that are preferences, not restorations
+
+| Setting | Default | What it is |
+|---|---|---|
+| **Instant Item Swap** | on | Skips the equip dip. 1.7 ramped the item up at 0.4/tick exactly like 26.2 does, so this is not a restoration — it is just tighter when switching mid-fight. |
+| **Instant Unsneak** | off | Snaps the camera up on release. 1.7 eased (see above); this exists because 26.2's crouch drop is 4× 1.7's, so the same curve reads as much more movement. |
+| **Blocking Slows You Down** | off | 1.7 cut movement to 20% and blocked sprinting for any item in use. Faithful, but it is **not visual-only** — it changes where you actually go. You move slower, never faster, so there is nothing for an anticheat to object to, but blocking buys you no damage reduction in 26.2 to pay for the handicap. |
 
 ### How the block pose is derived
 
