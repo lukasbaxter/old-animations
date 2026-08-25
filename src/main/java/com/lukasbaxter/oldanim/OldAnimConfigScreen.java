@@ -57,6 +57,10 @@ public final class OldAnimConfigScreen extends OptionsSubScreen {
                 value -> config.blockTransitionTicks = value.floatValue());
     }
 
+    private static Component header(String key) {
+        return Component.translatable("options.oldanimations.category." + key);
+    }
+
     private static OptionInstance<Boolean> toggle(
             String key, boolean initial, java.util.function.Consumer<Boolean> setter) {
         return OptionInstance.createBoolean(
@@ -75,76 +79,74 @@ public final class OldAnimConfigScreen extends OptionsSubScreen {
 
         this.list.addBig(toggle("enabled", config.enabled, v -> config.enabled = v));
 
+        // ---- what 1.7 did that 26.2 does not -----------------------------
+        this.list.addHeader(header("sword_blocking"));
         this.list.addSmall(
                 toggle("sword_blocking", config.swordBlocking, v -> config.swordBlocking = v),
                 toggle("block_hit", config.blockHit, v -> config.blockHit = v));
-
-        this.list.addBig(this.blockTransitionSlider());
-
         this.list.addSmall(
                 toggle("third_person_block", config.swordBlockingThirdPerson,
                         v -> config.swordBlockingThirdPerson = v),
                 toggle("block_with_axes", config.blockWithAxes, v -> config.blockWithAxes = v));
+        this.list.addSmall(
+                toggle("block_mining_swing", config.blockMiningSwing,
+                        v -> config.blockMiningSwing = v),
+                null);
+        this.list.addBig(this.blockTransitionSlider());
 
+        this.list.addHeader(header("sneaking"));
         this.list.addSmall(
                 toggle("old_sneak_pose", config.oldSneakPose, v -> config.oldSneakPose = v),
                 toggle("old_sneak_camera", config.oldSneakCamera,
                         v -> config.oldSneakCamera = v));
-
+        this.list.addSmall(
+                toggle("instant_unsneak", config.instantUnsneak,
+                        v -> config.instantUnsneak = v),
+                toggle("old_block_arm_pose", config.oldBlockArmPose,
+                        v -> config.oldBlockArmPose = v));
         this.list.addBig(this.sneakDepthSlider());
 
-        this.list.addSmall(
-                toggle("old_block_arm_pose", config.oldBlockArmPose, v -> config.oldBlockArmPose = v),
-                null);
-
+        this.list.addHeader(header("feedback"));
         this.list.addSmall(
                 toggle("armor_hurt_tint", config.armorHurtTint, v -> config.armorHurtTint = v),
                 toggle("no_health_flash", config.noHealthFlash, v -> config.noHealthFlash = v));
-
         this.list.addSmall(
                 toggle("hide_sweep_attack", config.hideSweepAttack,
                         v -> config.hideSweepAttack = v),
-                null);
+                toggle("hide_attack_indicator", config.hideAttackIndicator,
+                        v -> config.hideAttackIndicator = v));
+        this.list.addSmall(
+                toggle("hide_arrow_trail", config.hideOwnArrowTrail,
+                        v -> config.hideOwnArrowTrail = v),
+                toggle("predict_crits", config.predictCrits,
+                        v -> config.predictCrits = v));
 
+        // ---- preferences, not restorations -------------------------------
+        this.list.addHeader(header("preferences"));
+        this.list.addSmall(
+                toggle("instant_item_swap", config.instantItemSwap,
+                        v -> config.instantItemSwap = v),
+                toggle("fixed_swing_duration", config.fixedSwingDuration,
+                        v -> config.fixedSwingDuration = v));
         this.list.addSmall(
                 toggle("no_view_bobbing", config.noViewBobbing,
                         v -> config.noViewBobbing = v),
                 toggle("no_fov_effects", config.noFovEffects,
                         v -> config.noFovEffects = v));
 
-        this.list.addSmall(
-                toggle("hide_attack_indicator", config.hideAttackIndicator,
-                        v -> config.hideAttackIndicator = v),
-                null);
-
-        this.list.addSmall(
-                toggle("fixed_swing_duration", config.fixedSwingDuration,
-                        v -> config.fixedSwingDuration = v),
-                toggle("instant_item_swap", config.instantItemSwap,
-                        v -> config.instantItemSwap = v));
-
-        this.list.addSmall(
-                toggle("instant_unsneak", config.instantUnsneak,
-                        v -> config.instantUnsneak = v),
-                toggle("hide_arrow_trail", config.hideOwnArrowTrail,
-                        v -> config.hideOwnArrowTrail = v));
-
-        this.list.addSmall(
-                toggle("block_mining_swing", config.blockMiningSwing,
-                        v -> config.blockMiningSwing = v),
-                toggle("predict_crits", config.predictCrits,
-                        v -> config.predictCrits = v));
-
-        this.list.addSmall(
-                toggle("debug_readout", config.debugReadout,
-                        v -> config.debugReadout = v),
-                null);
-
+        // ---- the two that are not visual-only ----------------------------
+        this.list.addHeader(header("gameplay"));
         this.list.addSmall(
                 toggle("block_slowdown", config.blockSlowdown,
                         v -> config.blockSlowdown = v),
                 toggle("punch_while_using", config.punchWhileUsingItem,
                         v -> config.punchWhileUsingItem = v));
+
+        this.list.addHeader(header("diagnostics"));
+        this.list.addSmall(
+                toggle("debug_readout", config.debugReadout,
+                        v -> config.debugReadout = v),
+                null);
     }
 
     @Override
