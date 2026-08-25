@@ -172,13 +172,19 @@ public final class OldAnimConfig {
      * Ticks the sword takes to travel between the normal pose and the block
      * pose, in either direction.
      *
-     * <p>Blocking is binary the moment you press the button, and drawing it as a
-     * binary is what makes a fast blockhit look like two swords at once -- the
-     * sword is mid-swing on one frame and fully blocked on the next. A short
-     * ramp lets you see it move into position, which is what 1.8.9 clients look
-     * like. Set to {@code 1} for the old instant switch.
+     * <p>{@code 1} means no transition at all, which is what 1.7 did: the pose
+     * applied the instant {@code getItemInUseCount() > 0} and dropped the
+     * instant it did not.
+     *
+     * <p>Default since v1.10.0, because a fade is the wrong mechanism for this.
+     * The travel you see between the hit and the block in a real client is the
+     * swing arc winding down, and that arc is a pure function of swing progress
+     * -- the same path every time. A fade is driven by how long you happened to
+     * hold the button instead, so with fast clicks it never finishes and the
+     * sword floats at whatever angle the timing landed on. Raise it above 1 if
+     * you want the fade anyway.
      */
-    public float blockTransitionTicks = 3.0f;
+    public float blockTransitionTicks = 1.0f;
 
     /**
      * Spawn crit particles locally whenever a hit meets 1.7/1.8's crit condition.

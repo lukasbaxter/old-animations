@@ -203,12 +203,17 @@ branch where `continueDestroyBlock` returned true. On a server that refuses the
 break, or in adventure mode, nothing is destroyed, so nothing swings and the
 blockhit has nothing to compose onto.
 
-**Softer blockhit.** Blocking is binary the moment you press the button, and
-drawing it as a binary is what makes a fast blockhit look like two swords at
-once — the sword is mid-swing on one frame and fully blocked on the next, with
-nothing in between. `blockTransitionTicks` (3 by default) ramps a progress value
-that the pose is slerped along, so you can see the sword travel into the block.
-Set it to `1` for the old instant switch.
+**The blockhit path.** 1.7 had no transition into the block: the pose applied
+the instant `getItemInUseCount() > 0` and dropped the instant it did not. The
+travel you see between the hit and the block in a real client is the **swing arc
+winding down**, and that arc is a pure function of swing progress — so it follows
+the same path every time, in both angle and position.
+
+v1.7.0 tried to soften that with a fade, which was the wrong mechanism. A fade is
+driven by how long you happened to hold the button, so with fast clicks it never
+finishes and the sword floats at whatever intermediate angle the timing landed
+on. `blockTransitionTicks` is `1` (no transition) as of v1.10.0. Raise it if you
+want the fade anyway.
 
 **Blockhit While Mining** restarts the animation locally when vanilla lets it
 lapse, while you are aimed at a block with attack held. It uses
@@ -419,7 +424,7 @@ they are fine-tuning you would rarely touch:
 |---|---|---|
 | `blockOffsetX/Y/Z` | `0.0` | nudges the first-person block pose |
 | `blockScale` | `1.0` | scales the blocked item |
-| `blockTransitionTicks` | `3.0` | ticks the sword takes to move into and out of the block pose |
+| `blockTransitionTicks` | `1.0` | `1` = no transition, as 1.7. Above 1 fades into the block pose over that many ticks |
 | `hurtTintTicks` | `20` | ticks the red damage tint stays up (vanilla is 10) |
 
 ### Settings that are preferences or trade-offs, not restorations
