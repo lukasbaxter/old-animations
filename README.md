@@ -298,6 +298,26 @@ is the only part of that a client can do anything about.
 
 ---
 
+## Why blocking flickered on some servers
+
+`LocalPlayer.onSyncedDataUpdated` calls `startUsingItem()` whenever the server's
+`LIVING_ENTITY_FLAGS` say an item is in use. That means **the server can put your
+own client into "using item" state**, and some do.
+
+Blocking used to bail out whenever `isUsingItem()` was true, to avoid drawing a
+block on top of an animation vanilla was already playing. On a server that sets
+that flag, the pose flickered in and out — and because the mining stir and the
+block transition both hang off the same flag, they went with it. In singleplayer
+nothing sets it, so everything looked fine.
+
+The check is gone. It was only ever standing in for "is something else already
+animating this hand", and the two `isRealUseItem` tests answer that precisely: a
+sword has no use animation of its own, so a use state attached to one is not
+something vanilla is drawing. A shield or food in the off hand still wins, and a
+main-hand item that really does have a use animation is still not blockable.
+
+---
+
 ## The sneak double bounce (MC-248973)
 
 Tap sneak once on a server and the camera dips **twice**. This is a vanilla bug,
