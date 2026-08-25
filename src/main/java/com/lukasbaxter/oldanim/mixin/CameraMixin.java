@@ -2,11 +2,14 @@ package com.lukasbaxter.oldanim.mixin;
 
 import com.lukasbaxter.oldanim.OldAnimConfig;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Pose;
 import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -46,9 +49,51 @@ public abstract class CameraMixin {
     /** 26.2's own rate, used when the 1.7 curve is off but the drop is resized. */
     private static final float VANILLA_EASE_RATE = 0.5f;
 
+    /**
+     * How long a pose that disagrees with your own input is treated as the
+     * server echoing your action back at you rather than as a real change.
+     * See {@code oldanimations$isCrouching}.
+     */
+    private static final int ECHO_TICKS = 5;
+
     @Shadow private float eyeHeight;
     @Shadow private float eyeHeightOld;
     @Shadow @Nullable private Entity entity;
+
+    @Unique private int oldanimations$poseDisagreeTicks;
+
+    /**
+     * Whether the camera should be crouched, immune to MC-248973.
+     *
+     * <p>That bug: tap sneak once on a server and the camera dips twice. The
+     * client crouches immediately, the server is told, and then the server sends
+     * the state back -- so the client applies its own action a second time, a
+     * round trip later. Vanilla's easing mostly hides it; snapping instantly
+     * does not, which is why it shows up here as a double bounce.
+     *
+     * <p>For your own player the input is the truth and the synced pose is an
+     * echo of it, so a pose that disagrees with the key you are holding is
+     * ignored -- but only for {@link #ECHO_TICKS}. A disagreement that persists
+     * past that is real (you are wedged under a block and cannot stand up), and
+     * then the pose wins.
+     */
+    @Unique
+    private boolean oldanimations$isCrouching(Entity entity) {
+        boolean posed = entity.getPose() == Pose.CROUCHING;
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (entity != player || player == null) {
+            return posed;
+        }
+
+        boolean held = player.input.keyPresses.shift();
+        if (posed == held) {
+            this.oldanimations$poseDisagreeTicks = 0;
+            return held;
+        }
+
+        this.oldanimations$poseDisagreeTicks++;
+        return this.oldanimations$poseDisagreeTicks > ECHO_TICKS ? posed : held;
+    }
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void oldanimations$oldSneakCamera(CallbackInfo ci) {
@@ -58,12 +103,18 @@ public abstract class CameraMixin {
         }
 
         float target = this.entity.getEyeHeight();
+        float standing = this.entity.getEyeHeight(Pose.STANDING);
+        boolean crouching = this.oldanimations$isCrouching(this.entity);
 
-        // Resize the crouch drop rather than hard-coding 1.54, so this stays
-        // correct under player scale attributes and for any pose but crouching.
-        if (this.entity.getPose() == Pose.CROUCHING && config.sneakCameraDrop != 1.0f) {
-            float standing = this.entity.getEyeHeight(Pose.STANDING);
-            target = standing - (standing - target) * config.sneakCameraDrop;
+        if (crouching) {
+            // Resize the crouch drop rather than hard-coding 1.54, so this stays
+            // correct under player scale attributes.
+            float crouched = this.entity.getEyeHeight(Pose.CROUCHING);
+            target = standing - (standing - crouched) * config.sneakCameraDrop;
+        } else if (this.entity.getPose() == Pose.CROUCHING) {
+            // The pose says crouched but your own key says otherwise, so this is
+            // the echo. Stay standing rather than dipping a second time.
+            target = standing;
         }
 
         // Vanilla has already shifted eyeHeightOld to last tick's value, so it is
