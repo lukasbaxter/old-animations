@@ -40,8 +40,17 @@ public final class BlockingState {
         blocking = compute(minecraft);
 
         progressOld = progress;
-        float step = 1.0f / Math.max(1.0f, OldAnimConfig.get().blockTransitionTicks);
         float target = blocking ? 1.0f : 0.0f;
+        float ticks = OldAnimConfig.get().blockTransitionTicks;
+
+        if (ticks <= 1.0f) {
+            // 1.7's own behaviour: the pose is on or off, with nothing between.
+            progress = target;
+            progressOld = target;
+            return;
+        }
+
+        float step = 1.0f / ticks;
         if (progress < target) {
             progress = Math.min(target, progress + step);
         } else if (progress > target) {
@@ -52,12 +61,17 @@ public final class BlockingState {
     /**
      * How far into the block pose the sword is, interpolated for this frame.
      *
-     * <p>Blocking is a binary the moment you press the button, but drawing it as
-     * a binary is what makes a fast blockhit look like two swords in the same
-     * frame -- the sword is in the swing on one frame and fully blocked on the
-     * next with nothing in between. Ramping this over a few ticks lets you
-     * actually see it travel into the block, which is what 1.8.9 clients look
-     * like.
+     * <p>Off by default ({@code blockTransitionTicks = 1}), because 1.7 had no
+     * transition: the pose applied the instant {@code getItemInUseCount() > 0}
+     * and dropped the instant it did not. The travel you see between the hit
+     * and the block in a real client is the <em>swing arc</em> winding down, not
+     * a separate fade -- and that arc is a pure function of swing progress, so
+     * it follows the same path every time.
+     *
+     * <p>Easing on top of that is what made it float: the ramp is driven by how
+     * long you happened to hold the button, so with fast clicks it never
+     * finishes and the sword sits at whatever intermediate angle the timing
+     * landed on. Raise this above 1 if you want the fade anyway.
      */
     public static float blockProgress(InteractionHand hand, float partialTick) {
         if (hand != InteractionHand.MAIN_HAND) {
