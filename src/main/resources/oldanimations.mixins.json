@@ -4,14 +4,18 @@
 	"compatibilityLevel": "JAVA_25",
 	"client": [
 		"AbstractArrowMixin",
+		"AbstractClientPlayerMixin",
 		"CameraMixin",
+		"ClientLevelMixin",
 		"EquipmentLayerRendererMixin",
+		"GameRendererMixin",
 		"HudMixin",
 		"HumanoidModelMixin",
 		"AvatarRendererMixin",
 		"ItemInHandLayerMixin",
 		"ItemInHandRendererMixin",
 		"LivingEntityMixin",
+		"LivingEntityRendererMixin",
 		"MinecraftMixin",
 		"MultiPlayerGameModeMixin",
 		"LocalPlayerMixin"

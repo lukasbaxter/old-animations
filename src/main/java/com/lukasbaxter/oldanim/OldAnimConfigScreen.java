@@ -87,6 +87,17 @@ public final class OldAnimConfigScreen extends OptionsSubScreen {
                 toggle("no_health_flash", config.noHealthFlash, v -> config.noHealthFlash = v));
 
         this.list.addSmall(
+                toggle("hide_sweep_attack", config.hideSweepAttack,
+                        v -> config.hideSweepAttack = v),
+                null);
+
+        this.list.addSmall(
+                toggle("no_view_bobbing", config.noViewBobbing,
+                        v -> config.noViewBobbing = v),
+                toggle("no_fov_effects", config.noFovEffects,
+                        v -> config.noFovEffects = v));
+
+        this.list.addSmall(
                 toggle("hide_attack_indicator", config.hideAttackIndicator,
                         v -> config.hideAttackIndicator = v),
                 null);
