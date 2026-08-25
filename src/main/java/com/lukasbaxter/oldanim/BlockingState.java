@@ -64,6 +64,16 @@ public final class BlockingState {
         return !stack.isEmpty() && stack.getUseAnimation() != net.minecraft.world.item.ItemUseAnimation.NONE;
     }
 
+    /**
+     * True if this is a stack the mod invents a block for (a sword, or an axe
+     * when that is enabled). Shields and anything else with a real use
+     * animation are excluded, so renderers can use this to tell our fake block
+     * apart from one vanilla is already animating.
+     */
+    public static boolean isBlockableItem(ItemStack stack) {
+        return isBlockable(stack, OldAnimConfig.get());
+    }
+
     private static boolean isBlockable(ItemStack stack, OldAnimConfig config) {
         if (stack.isEmpty() || isRealUseItem(stack)) {
             return false;
