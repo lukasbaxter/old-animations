@@ -17,6 +17,7 @@
 		"LivingEntityMixin",
 		"LivingEntityRendererMixin",
 		"MinecraftMixin",
+		"MultiPlayerGameModeInteractMixin",
 		"MultiPlayerGameModeMixin",
 		"LocalPlayerMixin"
 	],

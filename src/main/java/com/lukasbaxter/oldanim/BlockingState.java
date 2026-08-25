@@ -29,6 +29,14 @@ public final class BlockingState {
      */
     private static String reason = "start";
 
+    /**
+     * Set when a right click was consumed by a block interaction -- opening a
+     * chest, flipping a lever -- and cleared when the key comes back up. 1.7's
+     * block was the fallback for a right click nothing else wanted, so a click
+     * that opened something should not also raise the sword.
+     */
+    private static boolean useConsumed;
+
     /** 0 = fully lowered, 1 = fully in the block pose. Eased, not switched. */
     private static float progress;
     private static float progressOld;
@@ -41,8 +49,16 @@ public final class BlockingState {
         return blocking;
     }
 
+    /** A right click was taken by a block interaction; do not block on it. */
+    public static void interactionConsumedClick() {
+        useConsumed = true;
+    }
+
     /** Called once per client tick. */
     public static void tick(Minecraft minecraft) {
+        if (!minecraft.options.keyUse.isDown()) {
+            useConsumed = false;
+        }
         blocking = compute(minecraft);
 
         progressOld = progress;
@@ -124,7 +140,7 @@ public final class BlockingState {
         if (!isBlockable(player.getMainHandItem(), config)) {
             ItemStack main = player.getMainHandItem();
             reason = main.isEmpty() ? "empty-hand"
-                    : isRealUseItem(main) ? "main-has-use:" + main.getUseAnimation()
+                    : isRealUseItemIgnoringBlock(main) ? "main-has-use:" + main.getUseAnimation()
                     : "not-a-sword";
             return false;
         }
@@ -132,13 +148,41 @@ public final class BlockingState {
             reason = "use-key-up";
             return false;
         }
+        if (useConsumed) {
+            reason = "interaction";
+            return false;
+        }
         reason = "ok";
         return true;
     }
 
-    /** Would vanilla itself animate a use for this stack? */
+    /**
+     * Would vanilla itself animate a use for this stack that is not a block?
+     *
+     * <p>{@code BLOCK} is deliberately not counted. A server can hand you a
+     * sword carrying that use animation to emulate 1.8 blocking on its own side,
+     * and Hypixel does exactly that. Treating it as "vanilla has this covered"
+     * was wrong twice over: vanilla's version is driven by the server's use
+     * state, so it flickers with the round trip, and it is not the 1.7 pose. The
+     * mod owns blocking, so it should take those items rather than stand aside.
+     *
+     * <p>Only the main hand relaxes this -- see {@link #isBlockable}, which also
+     * demands a sword or an axe, so a shield (also {@code BLOCK}) cannot slip
+     * through. In the off hand a shield still wins outright.
+     */
     private static boolean isRealUseItem(ItemStack stack) {
-        return !stack.isEmpty() && stack.getUseAnimation() != net.minecraft.world.item.ItemUseAnimation.NONE;
+        return !stack.isEmpty()
+                && stack.getUseAnimation() != net.minecraft.world.item.ItemUseAnimation.NONE;
+    }
+
+    /** As above, but tolerating a server-applied BLOCK animation on your weapon. */
+    private static boolean isRealUseItemIgnoringBlock(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return false;
+        }
+        net.minecraft.world.item.ItemUseAnimation animation = stack.getUseAnimation();
+        return animation != net.minecraft.world.item.ItemUseAnimation.NONE
+                && animation != net.minecraft.world.item.ItemUseAnimation.BLOCK;
     }
 
     /**
@@ -152,7 +196,7 @@ public final class BlockingState {
     }
 
     private static boolean isBlockable(ItemStack stack, OldAnimConfig config) {
-        if (stack.isEmpty() || isRealUseItem(stack)) {
+        if (stack.isEmpty() || isRealUseItemIgnoringBlock(stack)) {
             return false;
         }
         if (stack.is(ItemTags.SWORDS)) {

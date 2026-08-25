@@ -298,23 +298,39 @@ is the only part of that a client can do anything about.
 
 ---
 
-## Why blocking flickered on some servers
+## Why blocking flickered on Hypixel
 
-`LocalPlayer.onSyncedDataUpdated` calls `startUsingItem()` whenever the server's
-`LIVING_ENTITY_FLAGS` say an item is in use. That means **the server can put your
-own client into "using item" state**, and some do.
+**Hypixel hands you a sword that carries the `BLOCK` use animation.** They
+emulate 1.8 sword blocking on their own side, so from the client's point of view
+the item genuinely has a use action — the debug readout said it outright:
 
-Blocking used to bail out whenever `isUsingItem()` was true, to avoid drawing a
-block on top of an animation vanilla was already playing. On a server that sets
-that flag, the pose flickered in and out — and because the mining stir and the
-block transition both hang off the same flag, they went with it. In singleplayer
-nothing sets it, so everything looked fine.
+```
+blk=0 why=main-has-use:BLOCK use=1 atk=1 dig=0 swg=0 anim=0.00 hit=BLOCK
+```
 
-The check is gone. It was only ever standing in for "is something else already
-animating this hand", and the two `isRealUseItem` tests answer that precisely: a
-sword has no use animation of its own, so a use state attached to one is not
-something vanilla is drawing. A shield or food in the off hand still wins, and a
-main-hand item that really does have a use animation is still not blockable.
+The mod refused those items, on the reasoning that an item with a real use
+animation is one vanilla is already drawing and should be left alone. That was
+wrong twice over. Vanilla's version of that block is driven by the server's use
+state, so it flickers with the round trip, and it is not the 1.7 pose. And
+because everything else keys off `blocking`, the mining stir, the third-person
+cross and the block transition all went down with it.
+
+`BLOCK` is now tolerated on the main hand: the mod owns blocking, so it takes
+those items rather than standing aside, and drives the pose from your own key
+press with no round trip. Only the main hand relaxes it, and only for a sword or
+axe, so a shield — also `BLOCK` — cannot slip through, and in the off hand a
+shield still wins outright.
+
+Two earlier attempts at this flicker were wrong: the `isUsingItem()` bail
+(removed in v1.13.0) was a real problem of the same shape, just not this one.
+
+### And a right click that opened something should not also block
+
+1.7's block was the fallback for a right click nothing else wanted — the
+interaction ran first, and blocking only happened if the click survived it. 26.2
+runs the interaction underneath regardless, so a chest opened *and* the sword
+went up. A successful `useItemOn` now latches the click as spent until you let go
+of the button.
 
 ---
 
