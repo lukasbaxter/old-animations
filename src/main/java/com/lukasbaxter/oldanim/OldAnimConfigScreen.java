@@ -57,9 +57,8 @@ public final class OldAnimConfigScreen extends OptionsSubScreen {
                         v -> config.oldSneakCamera = v));
 
         this.list.addSmall(
-                toggle("old_sneak_eye_height", config.oldSneakEyeHeight,
-                        v -> config.oldSneakEyeHeight = v),
-                toggle("old_block_arm_pose", config.oldBlockArmPose, v -> config.oldBlockArmPose = v));
+                toggle("old_block_arm_pose", config.oldBlockArmPose, v -> config.oldBlockArmPose = v),
+                null);
 
         this.list.addSmall(
                 toggle("armor_hurt_tint", config.armorHurtTint, v -> config.armorHurtTint = v),
@@ -79,8 +78,14 @@ public final class OldAnimConfigScreen extends OptionsSubScreen {
         this.list.addSmall(
                 toggle("instant_unsneak", config.instantUnsneak,
                         v -> config.instantUnsneak = v),
+                toggle("hide_arrow_trail", config.hideOwnArrowTrail,
+                        v -> config.hideOwnArrowTrail = v));
+
+        this.list.addSmall(
                 toggle("block_slowdown", config.blockSlowdown,
-                        v -> config.blockSlowdown = v));
+                        v -> config.blockSlowdown = v),
+                toggle("punch_while_using", config.punchWhileUsingItem,
+                        v -> config.punchWhileUsingItem = v));
     }
 
     @Override

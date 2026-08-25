@@ -49,14 +49,30 @@ public final class OldAnimConfig {
      */
     public boolean oldSneakCamera = true;
     /**
-     * Use 1.7's crouch eye height (1.54) instead of the modern one (1.27).
+     * How much of 26.2's crouch camera drop to actually apply, as a fraction.
      *
-     * <p>Off by default on purpose: this moves the camera only. Block and entity
-     * picking still originate from the real 1.27 eye position, so while crouched
-     * the crosshair sits slightly below where you are actually aiming. Turn it on
-     * if you want the look, leave it off if you want your aim to match the reticle.
+     * <p>26.2 drops the camera from 1.62 to 1.27, a drop of <b>0.35</b>. 1.7
+     * dropped it by <b>0.08</b> (1.62 to 1.54) and no more -- so 26.2 crouches
+     * more than four times as deep, and any curve applied to that drop reads as
+     * four times as much movement.
+     *
+     * <ul>
+     *   <li>{@code 1.0} -- 26.2's full 0.35 drop
+     *   <li>{@code 0.2286} -- 1.7's 0.08 drop (the default)
+     *   <li>{@code 0.0} -- camera does not drop at all
+     * </ul>
+     *
+     * <p><b>The cost.</b> This moves the camera, not the eye. Block and entity
+     * picking originate from {@code Entity.getEyePosition}, which stays at the
+     * real 1.27, so while crouched your crosshair sits
+     * {@code (1 - sneakCameraDrop) * 0.35} blocks above where the ray actually
+     * starts -- 0.27 at the default. Set this back to {@code 1.0} if you would
+     * rather have the deep crouch and an honest reticle.
+     *
+     * <p>Derived from the standing and crouching eye heights at runtime, so
+     * player scale attributes still behave.
      */
-    public boolean oldSneakEyeHeight = false;
+    public float sneakCameraDrop = 0.22857143f;
 
     // ---- third-person arms -----------------------------------------------
     /** 1.7 blocking arm: no -30 degree yaw and no head tracking clamp. */
@@ -96,12 +112,13 @@ public final class OldAnimConfig {
     /**
      * Snap the camera back up when you release sneak instead of easing.
      *
-     * <p>Also not 1.7: 1.7's crouch camera eased on the way up (see
-     * {@code oldSneakCamera}). Turn this on if the ease still reads as too
-     * heavy -- it is a bigger drop in 26.2 than it ever was in 1.7, because
-     * 26.2 crouches to 1.27 where 1.7 only went to 1.54.
+     * <p>Not 1.7 -- 1.7's crouch camera eased on the way up over about four
+     * ticks (see {@code oldSneakCamera}). On by default anyway: even at the
+     * correct 60%-per-tick rate the ease is the part of the sneak that reads as
+     * sluggish, and it is what most 1.8.9 PvP clients feel like. Turn it off
+     * for the accurate curve.
      */
-    public boolean instantUnsneak = false;
+    public boolean instantUnsneak = true;
 
     /**
      * Slow you to 20% movement while blocking, and stop you sprinting, the way
@@ -115,6 +132,30 @@ public final class OldAnimConfig {
      * blocking buys you no damage reduction to pay for it.
      */
     public boolean blockSlowdown = false;
+
+    /**
+     * Let you attack while an item is in use -- bow punching, and block-hitting
+     * with a drawn bow.
+     *
+     * <p>1.7 allowed this by never checking: its {@code clickMouse} swung the
+     * arm with no reference to {@code isUsingItem()}. 26.2's {@code startAttack}
+     * bails on {@code isHandsBusy()} instead.
+     *
+     * <p><strong>Off by default, and the riskiest setting here.</strong> Unlike
+     * {@code blockSlowdown}, which only handicaps you, this makes attack packets
+     * happen that a vanilla client would have swallowed. That is the shape of
+     * thing a server anticheat looks for. Genuine 1.7 behaviour, your call.
+     */
+    public boolean punchWhileUsingItem = false;
+
+    /**
+     * Drop the crit particle trail from arrows you fired yourself.
+     *
+     * <p>A preference rather than a restoration: 1.7 spawned the same trail.
+     * Other players' arrows keep theirs, so a fully drawn shot coming at you
+     * still reads as one.
+     */
+    public boolean hideOwnArrowTrail = true;
 
     // ---- plumbing --------------------------------------------------------
 
