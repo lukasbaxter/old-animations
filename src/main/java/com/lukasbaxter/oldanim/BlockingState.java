@@ -89,9 +89,22 @@ public final class BlockingState {
         if (player == null || minecraft.level == null || minecraft.gui.screen() != null) {
             return false;
         }
-        if (player.isSpectator() || player.isUsingItem() || player.isAutoSpinAttack()) {
+        if (player.isSpectator() || player.isAutoSpinAttack()) {
             return false;
         }
+        // Deliberately NOT gated on player.isUsingItem().
+        //
+        // LocalPlayer.onSyncedDataUpdated will call startUsingItem() whenever the
+        // server's LIVING_ENTITY_FLAGS say so, so the server can put your own
+        // client into "using item" state at will -- and some do. Bailing out on
+        // that made the block pose flicker in and out on those servers while
+        // working perfectly in singleplayer, and took the mining stir and the
+        // block transition down with it, since both hang off this flag.
+        //
+        // The check was only ever standing in for "is something else already
+        // animating this hand", and the two isRealUseItem tests below answer that
+        // precisely: a sword has no use animation of its own, so a use state
+        // attached to one is not something vanilla is drawing.
         // A shield (or anything else with a real use action) in the off hand wins:
         // vanilla already animates that, and doubling up looks wrong.
         if (isRealUseItem(player.getOffhandItem())) {
@@ -184,6 +197,7 @@ public final class BlockingState {
      *
      * <pre>
      * blk  are we drawing a block at all
+     * use  does the client think an item is in use (the server can set this)
      * atk  is the attack key down
      * dig  is vanilla already destroying a block (its own swing would cover us)
      * swg  is a swing currently running
@@ -212,8 +226,9 @@ public final class BlockingState {
 
         minecraft.gui.hud.setOverlayMessage(
                 net.minecraft.network.chat.Component.literal(String.format(
-                        "blk=%d atk=%d dig=%d swg=%d anim=%.2f hit=%s gm=%s",
+                        "blk=%d use=%d atk=%d dig=%d swg=%d anim=%.2f hit=%s gm=%s",
                         blocking ? 1 : 0,
+                        player.isUsingItem() ? 1 : 0,
                         minecraft.options.keyAttack.isDown() ? 1 : 0,
                         digging ? 1 : 0,
                         player.swinging ? 1 : 0,
