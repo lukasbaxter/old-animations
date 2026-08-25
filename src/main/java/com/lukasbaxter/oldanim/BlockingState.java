@@ -271,6 +271,7 @@ public final class BlockingState {
      * blk  are we drawing a block at all
      * why  which gate said no, when blk is 0
      * use  does the client think an item is in use (the server can set this)
+     * punch is Attack While Using An Item switched on
      * atk  is the attack key down
      * dig  is vanilla already destroying a block (its own swing would cover us)
      * swg  is a swing currently running
@@ -299,10 +300,11 @@ public final class BlockingState {
 
         minecraft.gui.hud.setOverlayMessage(
                 net.minecraft.network.chat.Component.literal(String.format(
-                        "blk=%d why=%s use=%d atk=%d dig=%d swg=%d anim=%.2f hit=%s gm=%s",
+                        "blk=%d why=%s use=%d punch=%d atk=%d dig=%d swg=%d anim=%.2f hit=%s gm=%s",
                         blocking ? 1 : 0,
                         reason,
                         player.isUsingItem() ? 1 : 0,
+                        config.punchWhileUsingItem ? 1 : 0,
                         minecraft.options.keyAttack.isDown() ? 1 : 0,
                         digging ? 1 : 0,
                         player.swinging ? 1 : 0,

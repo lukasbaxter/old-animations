@@ -53,8 +53,20 @@ public abstract class LocalPlayerMixin {
         if (!this.oldanimations$slowedByBlocking()) {
             return;
         }
+        LocalPlayer player = (LocalPlayer) (Object) this;
         // 1.7 exempted riders, and so does vanilla's own use-item slowdown.
-        if (((LocalPlayer) (Object) this).isPassenger()) {
+        if (player.isPassenger()) {
+            return;
+        }
+        // If the client already thinks an item is in use, modifyInput has
+        // scaled by itemUseSpeedMultiplier() a few lines above us and applying
+        // 0.2 on top of that stacks two slowdowns into one.
+        //
+        // That is not hypothetical: a server emulating 1.8 blocking hands you a
+        // sword carrying the BLOCK use animation, so it is in use as far as the
+        // client is concerned every time you block, and the result was 0.2 of
+        // vanilla's own already-reduced speed.
+        if (player.isUsingItem()) {
             return;
         }
         cir.setReturnValue(cir.getReturnValue().scale(BLOCK_MOVEMENT_SCALE));
