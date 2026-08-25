@@ -44,6 +44,7 @@ public final class OldAnimations implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(minecraft -> {
             BlockingState.tick(minecraft);
+            BlockingState.tickMiningSwing(minecraft);
 
             while (openConfigKey.consumeClick()) {
                 minecraft.gui.setScreen(new OldAnimConfigScreen(minecraft.gui.screen(), minecraft.options));
