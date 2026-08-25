@@ -168,6 +168,18 @@ public final class OldAnimConfig {
      */
     public boolean blockMiningSwing = true;
 
+    /**
+     * Ticks the sword takes to travel between the normal pose and the block
+     * pose, in either direction.
+     *
+     * <p>Blocking is binary the moment you press the button, and drawing it as a
+     * binary is what makes a fast blockhit look like two swords at once -- the
+     * sword is mid-swing on one frame and fully blocked on the next. A short
+     * ramp lets you see it move into position, which is what 1.8.9 clients look
+     * like. Set to {@code 1} for the old instant switch.
+     */
+    public float blockTransitionTicks = 3.0f;
+
     // ---- plumbing --------------------------------------------------------
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();

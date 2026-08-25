@@ -23,6 +23,10 @@ public final class BlockingState {
 
     private static boolean blocking;
 
+    /** 0 = fully lowered, 1 = fully in the block pose. Eased, not switched. */
+    private static float progress;
+    private static float progressOld;
+
     private BlockingState() {
     }
 
@@ -34,6 +38,32 @@ public final class BlockingState {
     /** Called once per client tick. */
     public static void tick(Minecraft minecraft) {
         blocking = compute(minecraft);
+
+        progressOld = progress;
+        float step = 1.0f / Math.max(1.0f, OldAnimConfig.get().blockTransitionTicks);
+        float target = blocking ? 1.0f : 0.0f;
+        if (progress < target) {
+            progress = Math.min(target, progress + step);
+        } else if (progress > target) {
+            progress = Math.max(target, progress - step);
+        }
+    }
+
+    /**
+     * How far into the block pose the sword is, interpolated for this frame.
+     *
+     * <p>Blocking is a binary the moment you press the button, but drawing it as
+     * a binary is what makes a fast blockhit look like two swords in the same
+     * frame -- the sword is in the swing on one frame and fully blocked on the
+     * next with nothing in between. Ramping this over a few ticks lets you
+     * actually see it travel into the block, which is what 1.8.9 clients look
+     * like.
+     */
+    public static float blockProgress(InteractionHand hand, float partialTick) {
+        if (hand != InteractionHand.MAIN_HAND) {
+            return 0.0f;
+        }
+        return progressOld + (progress - progressOld) * partialTick;
     }
 
     private static boolean compute(Minecraft minecraft) {
@@ -110,7 +140,7 @@ public final class BlockingState {
         }
 
         LocalPlayer player = minecraft.player;
-        if (player == null || player.swinging || minecraft.gui.screen() != null) {
+        if (player == null || minecraft.gui.screen() != null) {
             return;
         }
         if (!minecraft.options.keyAttack.isDown()) {
@@ -123,6 +153,9 @@ public final class BlockingState {
             return;
         }
 
+        // Called every tick on purpose: LivingEntity.swing only restarts once
+        // the current swing is past halfway, so this reproduces vanilla's own
+        // mining cadence rather than retriggering every tick.
         player.swing(InteractionHand.MAIN_HAND, false);
     }
 

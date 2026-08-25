@@ -24,6 +24,26 @@ public final class OldAnimConfigScreen extends OptionsSubScreen {
         super(lastScreen, options, Component.translatable("options.oldanimations.title"));
     }
 
+    /**
+     * Crouch camera depth, as a percentage of 26.2's own 0.35 drop. 1.7 dropped
+     * 0.08, which is 23%, so the slider runs from "camera does not move" through
+     * 1.7 to "26.2 as shipped" and the label shows the resulting drop in blocks.
+     */
+    private static final float VANILLA_CROUCH_DROP = 0.35f;
+
+    private OptionInstance<Integer> sneakDepthSlider() {
+        return new OptionInstance<>(
+                "options.oldanimations.sneak_camera_drop",
+                OptionInstance.cachedConstantTooltip(
+                        Component.translatable("options.oldanimations.sneak_camera_drop.tooltip")),
+                (caption, value) -> Component.translatable(
+                        "options.oldanimations.sneak_camera_drop.value",
+                        String.format("%.2f", value / 100.0f * VANILLA_CROUCH_DROP)),
+                new OptionInstance.IntRange(0, 100),
+                Math.round(config.sneakCameraDrop * 100.0f),
+                value -> config.sneakCameraDrop = value / 100.0f);
+    }
+
     private static OptionInstance<Boolean> toggle(
             String key, boolean initial, java.util.function.Consumer<Boolean> setter) {
         return OptionInstance.createBoolean(
@@ -55,6 +75,8 @@ public final class OldAnimConfigScreen extends OptionsSubScreen {
                 toggle("old_sneak_pose", config.oldSneakPose, v -> config.oldSneakPose = v),
                 toggle("old_sneak_camera", config.oldSneakCamera,
                         v -> config.oldSneakCamera = v));
+
+        this.list.addBig(this.sneakDepthSlider());
 
         this.list.addSmall(
                 toggle("old_block_arm_pose", config.oldBlockArmPose, v -> config.oldBlockArmPose = v),

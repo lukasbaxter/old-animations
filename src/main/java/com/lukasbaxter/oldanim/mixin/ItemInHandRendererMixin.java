@@ -4,6 +4,7 @@ import com.lukasbaxter.oldanim.BlockingState;
 import com.lukasbaxter.oldanim.OldAnimConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import org.joml.Quaternionf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
@@ -108,7 +109,8 @@ public abstract class ItemInHandRendererMixin {
         if (!config.enabled || !config.swordBlocking) {
             return;
         }
-        if (!BlockingState.isBlockingHand(hand) || itemStack.isEmpty()) {
+        float blockProgress = BlockingState.blockProgress(hand, frameInterp);
+        if (blockProgress <= 0.0f || itemStack.isEmpty()) {
             return;
         }
         // Vanilla draws no arm at all while scoping; keep that.
@@ -155,7 +157,7 @@ public abstract class ItemInHandRendererMixin {
             poseStack.mulPose(Axis.YP.rotationDegrees(invert * -45.0f));
         }
 
-        applyBlockPose(poseStack, config, invert);
+        applyBlockPose(poseStack, config, invert, blockProgress);
 
         this.renderItem(
                 player,
@@ -198,11 +200,24 @@ public abstract class ItemInHandRendererMixin {
      * <p>Dropping the raw 1.7 numbers into 26.2 without folding in the {@code Ry(45)}
      * and the scale, which this mod did before v1.2.0, is wrong by 57 degrees.
      */
-    private static void applyBlockPose(PoseStack poseStack, OldAnimConfig config, int invert) {
-        poseStack.translate(invert * -0.14142136f, 0.08f, 0.14142136f);
-        poseStack.mulPose(Axis.YP.rotationDegrees(invert * 75.0f));
-        poseStack.mulPose(Axis.XP.rotationDegrees(-80.0f));
-        poseStack.mulPose(Axis.YP.rotationDegrees(invert * 15.0f));
+    private static void applyBlockPose(
+            PoseStack poseStack, OldAnimConfig config, int invert, float progress) {
+
+        // Blended in rather than switched on. The pose is composed once as a
+        // single rotation so it can be slerped out of the rest pose, which is
+        // what makes a fast blockhit read as one sword travelling instead of
+        // two swords alternating. At progress 1 this is bit-identical to
+        // applying the three rotations in sequence.
+        Quaternionf pose = new Quaternionf()
+                .rotateY((float) Math.toRadians(invert * 75.0f))
+                .rotateX((float) Math.toRadians(-80.0f))
+                .rotateY((float) Math.toRadians(invert * 15.0f));
+
+        poseStack.translate(
+                invert * -0.14142136f * progress,
+                0.08f * progress,
+                0.14142136f * progress);
+        poseStack.mulPose(progress >= 1.0f ? pose : new Quaternionf().slerp(pose, progress));
 
         if (config.blockOffsetX != 0.0f || config.blockOffsetY != 0.0f || config.blockOffsetZ != 0.0f) {
             poseStack.translate(invert * config.blockOffsetX, config.blockOffsetY, config.blockOffsetZ);
