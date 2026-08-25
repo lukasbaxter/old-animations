@@ -106,7 +106,8 @@ public final class OldAnimConfigScreen extends OptionsSubScreen {
         this.list.addSmall(
                 toggle("block_mining_swing", config.blockMiningSwing,
                         v -> config.blockMiningSwing = v),
-                null);
+                toggle("predict_crits", config.predictCrits,
+                        v -> config.predictCrits = v));
 
         this.list.addSmall(
                 toggle("block_slowdown", config.blockSlowdown,

@@ -25,6 +25,7 @@ each feature below corresponds to a specific behaviour that actually changed.
 | **Blocking slowdown** | swords aren't "in use", so no slowdown | 20% movement, no sprinting | ✅ (opt-in, not visual-only) |
 | **Attacking while using** | `startAttack` bails on `isHandsBusy()` | never checked, so bow punching worked | ✅ (opt-in, sends packets) |
 | **Own arrow crit trail** | crit particles stream behind it | same trail | ➖ removable (preference) |
+| **Melee crit particles** | gated behind the attack cooldown | any falling hit critted | ⚠️ predicted client-side (opt-in) |
 | **Blockhit while mining** | only swings while a break progresses | swung regardless | ✅ (local animation only) |
 
 ### What is deliberately *not* here
@@ -254,6 +255,36 @@ it can go in behind a toggle.
 
 ---
 
+## Crit particles
+
+The client half is unchanged. 26.2 spawns them exactly the way 1.8 did:
+`ClientboundAnimatePacket` action 4 → `ParticleEngine.createTrackingEmitter(entity,
+ParticleTypes.CRIT)`. What changed is **who decides**. 1.7 and 1.8 critted on any
+falling hit; 1.9 combat added the attack cooldown, so a 26.2 server only crits
+when the cooldown is essentially full and sends no packet otherwise. That
+decision is server-side and a client cannot move it.
+
+**Predicted Crit Particles** spawns the emitter locally when a hit satisfies
+1.7's own condition, taken from `EntityPlayer.attackTargetEntityWithCurrentItem`:
+
+```java
+fallDistance > 0 && !onGround && !isOnLadder() && !isInWater()
+  && !isPotionActive(blindness) && ridingEntity == null
+  && target instanceof EntityLivingBase
+```
+
+There is deliberately no sprinting term — 1.7 and 1.8 both let you crit while
+sprinting, and "no crits while sprinting" is a 1.9 rule.
+
+**These particles can lie.** They say "1.8 would have critted this", not "this
+hit dealt crit damage". On a 26.2-combat server a hit with a partial cooldown
+shows particles and does normal damage, and if the server *does* crit you get
+both emitters at once. Off by default for that reason. Nothing is sent and
+nothing is suppressed: the particles exist only on your client and no other
+player sees them.
+
+---
+
 ## Compared to Orange's 1.7 Animations / Animatium
 
 Orange's mod (and the open-source [Animatium-Legacy](https://github.com/Legacy-Visuals-Project/Animatium-Legacy),
@@ -361,6 +392,7 @@ they are fine-tuning you would rarely touch:
 | **Blocking Slows You Down** | off | 1.7 cut movement to 20% and blocked sprinting for any item in use. Faithful, but it is **not visual-only** — it changes where you actually go. You move slower, never faster, so there is nothing for an anticheat to object to, but blocking buys you no damage reduction in 26.2 to pay for the handicap. |
 | **Hide Own Arrow Trail** | on | Drops the crit particle stream behind arrows you fired. 1.7 had the same trail, so this is taste, not history. |
 | **Attack While Using An Item** | off | Bow punching and block-hitting with a drawn bow. Real 1.7 behaviour, but the **only** setting that makes packets happen a vanilla client would not have sent. See above. |
+| **Predicted Crit Particles** | off | 1.7/1.8 crit particles on any falling hit. Client-side only and sends nothing, but the particles can disagree with the damage the server actually applied. See above. |
 
 ### How the block pose is derived
 
