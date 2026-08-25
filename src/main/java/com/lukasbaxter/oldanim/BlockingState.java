@@ -290,6 +290,9 @@ public final class BlockingState {
      * anim swing progress, 0 to 1
      * hit  what the crosshair is on
      * gm   game mode as the client understands it
+     * reach entity / block interaction range, straight off the attributes. The
+     *       mod does not touch either -- it is in the readout so you can see
+     *       that rather than take it on trust.
      * </pre>
      */
     public static void tickDebugReadout(Minecraft minecraft) {
@@ -312,7 +315,8 @@ public final class BlockingState {
 
         minecraft.gui.hud.setOverlayMessage(
                 net.minecraft.network.chat.Component.literal(String.format(
-                        "blk=%d flips=%d why=%s use=%d punch=%d atk=%d dig=%d swg=%d anim=%.2f hit=%s gm=%s",
+                        "blk=%d flips=%d why=%s use=%d punch=%d atk=%d dig=%d swg=%d "
+                                + "anim=%.2f hit=%s gm=%s reach=%.2f/%.2f",
                         blocking ? 1 : 0,
                         recentFlips(),
                         reason,
@@ -323,7 +327,9 @@ public final class BlockingState {
                         player.swinging ? 1 : 0,
                         player.getAttackAnim(1.0f),
                         hit,
-                        mode)),
+                        mode,
+                        player.entityInteractionRange(),
+                        player.blockInteractionRange())),
                 false);
     }
 
