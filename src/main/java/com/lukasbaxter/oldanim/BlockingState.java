@@ -5,6 +5,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.HitResult;
 
 /**
  * Tracks whether the local player is "blocking" in the 1.7 sense: holding the
@@ -37,6 +38,10 @@ public final class BlockingState {
      */
     private static boolean useConsumed;
 
+    /** Rolling count of blocking on/off transitions, for spotting a flicker. */
+    private static final boolean[] RECENT = new boolean[20];
+    private static int recentIndex;
+
     /** 0 = fully lowered, 1 = fully in the block pose. Eased, not switched. */
     private static float progress;
     private static float progressOld;
@@ -60,6 +65,9 @@ public final class BlockingState {
             useConsumed = false;
         }
         blocking = compute(minecraft);
+
+        RECENT[recentIndex] = blocking;
+        recentIndex = (recentIndex + 1) % RECENT.length;
 
         progressOld = progress;
         float target = blocking ? 1.0f : 0.0f;
@@ -246,14 +254,17 @@ public final class BlockingState {
         }
         // Only when vanilla is not already driving a break of its own -- that is
         // the whole point, and it also stops the two doubling up.
-        //
-        // This used to also require the crosshair to be on a block, which is why
-        // it worked in singleplayer and not on a server: in singleplayer the
-        // block is breakable, so the swing you saw was vanilla's own. On a server
-        // that refuses the break the fallback has to carry it, and gating on the
-        // hit result meant it did not fire. The cost of dropping that check is
-        // that holding attack at thin air while blocking also stirs.
         if (minecraft.gameMode != null && minecraft.gameMode.isDestroying()) {
+            return;
+        }
+        // And only while actually aimed at a block in reach. Swinging at open air
+        // is not mining, so it should not stir.
+        //
+        // This gate was dropped in v1.11.0 while chasing the stir not firing on
+        // Hypixel, on the theory that it was the thing blocking it. It was not --
+        // that was `blocking` being false, fixed in v1.15.0 -- so it is back.
+        if (minecraft.hitResult == null
+                || minecraft.hitResult.getType() != HitResult.Type.BLOCK) {
             return;
         }
 
@@ -269,6 +280,7 @@ public final class BlockingState {
      *
      * <pre>
      * blk  are we drawing a block at all
+     * flips how many times blocking flipped in the last second (0 = steady)
      * why  which gate said no, when blk is 0
      * use  does the client think an item is in use (the server can set this)
      * punch is Attack While Using An Item switched on
@@ -300,8 +312,9 @@ public final class BlockingState {
 
         minecraft.gui.hud.setOverlayMessage(
                 net.minecraft.network.chat.Component.literal(String.format(
-                        "blk=%d why=%s use=%d punch=%d atk=%d dig=%d swg=%d anim=%.2f hit=%s gm=%s",
+                        "blk=%d flips=%d why=%s use=%d punch=%d atk=%d dig=%d swg=%d anim=%.2f hit=%s gm=%s",
                         blocking ? 1 : 0,
+                        recentFlips(),
                         reason,
                         player.isUsingItem() ? 1 : 0,
                         config.punchWhileUsingItem ? 1 : 0,
@@ -312,6 +325,22 @@ public final class BlockingState {
                         hit,
                         mode)),
                 false);
+    }
+
+    /**
+     * How many times blocking flipped on or off in the last second. Steady
+     * blocking is 0; anything else is the flicker, and the number says how fast.
+     */
+    private static int recentFlips() {
+        int flips = 0;
+        for (int i = 1; i < RECENT.length; i++) {
+            int a = (recentIndex + i - 1) % RECENT.length;
+            int b = (recentIndex + i) % RECENT.length;
+            if (RECENT[a] != RECENT[b]) {
+                flips++;
+            }
+        }
+        return flips;
     }
 
     /** True if the given hand is the one holding the blocked item. */
