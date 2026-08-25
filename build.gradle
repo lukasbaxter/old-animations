@@ -6,6 +6,15 @@ repositories {
 }
 
 loom {
+	runs {
+		client {
+			// Mixin writes every class it transformed to run/.mixin.out/class/,
+			// which is the only way to prove an @Inject actually landed --
+			// wrong targets compile fine and only fail at class load.
+			vmArg "-Dmixin.debug.export=true"
+		}
+	}
+
 	// Client-only mod: no split source sets, everything lives in `main`
 	// and fabric.mod.json declares "environment": "client".
 	mods {
